@@ -1,0 +1,1590 @@
+{
+ "categories": [
+  {
+   "id": "biryani",
+   "name": "Biryani",
+   "blurb": "Golden, gently spiced, slow on the dum."
+  },
+  {
+   "id": "kuska",
+   "name": "Kuska & Rice",
+   "blurb": "Biryani rice, minus the pieces. North Madras loves it."
+  },
+  {
+   "id": "chicken",
+   "name": "Fried Chicken & Starters",
+   "blurb": "Seven ways to fry a chicken. All of them good."
+  },
+  {
+   "id": "seafood",
+   "name": "Indian Seafood",
+   "blurb": "Crab, prawn, karimeen and vanjaram from the coast."
+  },
+  {
+   "id": "kebabs",
+   "name": "Kebabs & Tikka",
+   "blurb": "Off the tandoor, smoky at the edges."
+  },
+  {
+   "id": "mutton",
+   "name": "Mutton Specials",
+   "blurb": "Kozhambu, pirattal and paya, South Indian style."
+  },
+  {
+   "id": "south-seafood",
+   "name": "South Indian Seafood",
+   "blurb": "Masala, thokku or pepper gravy."
+  },
+  {
+   "id": "indian-main",
+   "name": "Indian Main Course",
+   "blurb": "Pick the gravy, then pick the meat."
+  },
+  {
+   "id": "chinese",
+   "name": "Chinese Main Course",
+   "blurb": "Chennai-style Chinese. Pick the gravy, then pick the meat."
+  },
+  {
+   "id": "parotta",
+   "name": "Parotta & Breads",
+   "blurb": "Soft, flaky, made fresh in the evenings."
+  },
+  {
+   "id": "tiffin",
+   "name": "Tiffin",
+   "blurb": "Dosai, kalakki and the morning-to-night classics."
+  },
+  {
+   "id": "soups",
+   "name": "Soups",
+   "blurb": "Hot, peppery, Chettinad style."
+  },
+  {
+   "id": "rice-noodles",
+   "name": "Rice & Noodles",
+   "blurb": "Fried rice and noodles, wok-tossed."
+  },
+  {
+   "id": "shawarma",
+   "name": "Shawarma",
+   "blurb": "Rolled to order."
+  },
+  {
+   "id": "desserts",
+   "name": "Desserts",
+   "blurb": "Something cold after all that spice."
+  }
+ ],
+ "dishes": [
+  {
+   "id": "mutton-biryani",
+   "name": "Mutton Biryani",
+   "tamil": "மட்டன் பிரியாணி",
+   "category": "biryani",
+   "diet": "nonveg",
+   "price": 320,
+   "tags": [
+    "signature",
+    "bestseller"
+   ],
+   "desc": "Tender mutton and golden rice, with a gentle masala that lets the meat talk.",
+   "label": "₹320"
+  },
+  {
+   "id": "chicken-biryani",
+   "name": "Chicken Biryani",
+   "tamil": "சிக்கன் பிரியாணி",
+   "category": "biryani",
+   "diet": "nonveg",
+   "price": 260,
+   "tags": [
+    "bestseller"
+   ],
+   "desc": "Juicy chicken pieces layered and sealed for dum.",
+   "label": "₹260"
+  },
+  {
+   "id": "fish-biryani",
+   "name": "Fish Biryani",
+   "category": "biryani",
+   "diet": "nonveg",
+   "price": 335,
+   "verified": true,
+   "desc": "Boneless fish folded through fragrant rice.",
+   "label": "₹335"
+  },
+  {
+   "id": "prawn-biryani",
+   "name": "Prawn Biryani",
+   "category": "biryani",
+   "diet": "nonveg",
+   "price": 340,
+   "desc": "Coastal prawns, slow-cooked with the rice.",
+   "label": "₹340"
+  },
+  {
+   "id": "egg-biryani",
+   "name": "Egg Biryani",
+   "category": "biryani",
+   "diet": "egg",
+   "price": 180,
+   "desc": "Masala eggs on a full plate of biryani rice.",
+   "label": "₹180"
+  },
+  {
+   "id": "veg-biryani",
+   "name": "Veg Biryani",
+   "category": "biryani",
+   "diet": "veg",
+   "price": 190,
+   "desc": "Garden vegetables, the same slow dum.",
+   "label": "₹190"
+  },
+  {
+   "id": "kuska",
+   "name": "Kuska",
+   "tamil": "குஸ்கா",
+   "category": "kuska",
+   "diet": "nonveg",
+   "price": 150,
+   "tags": [
+    "signature"
+   ],
+   "desc": "Biryani rice cooked in the mutton stock, minus the pieces. Pair it with a mutton kozhambu.",
+   "label": "₹150"
+  },
+  {
+   "id": "kuska-egg",
+   "name": "Kuska with Egg",
+   "category": "kuska",
+   "diet": "nonveg",
+   "price": 175,
+   "label": "₹175"
+  },
+  {
+   "id": "pandias-fried-chicken",
+   "name": "Pandia's Fried Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Full",
+     "price": 400
+    },
+    {
+     "label": "Half",
+     "price": 270
+    }
+   ],
+   "tags": [
+    "signature"
+   ],
+   "verified": true,
+   "desc": "The house fry, named after the hotel.",
+   "label": "₹400 / ₹270"
+  },
+  {
+   "id": "chettinad-fried-chicken",
+   "name": "Chettinad Fried Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Full",
+     "price": 400
+    },
+    {
+     "label": "Half",
+     "price": 270
+    }
+   ],
+   "tags": [
+    "special",
+    "spicy"
+   ],
+   "verified": true,
+   "label": "₹400 / ₹270"
+  },
+  {
+   "id": "peppery-fried-chicken",
+   "name": "Peppery Fried Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Full",
+     "price": 400
+    },
+    {
+     "label": "Half",
+     "price": 270
+    }
+   ],
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "₹400 / ₹270"
+  },
+  {
+   "id": "andhra-fried-chicken",
+   "name": "Andhra Fried Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Full",
+     "price": 400
+    },
+    {
+     "label": "Half",
+     "price": 270
+    }
+   ],
+   "tags": [
+    "special",
+    "spicy"
+   ],
+   "verified": true,
+   "label": "₹400 / ₹270"
+  },
+  {
+   "id": "red-hot-fried-chicken",
+   "name": "Red Hot Fried Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Full",
+     "price": 400
+    },
+    {
+     "label": "Half",
+     "price": 270
+    }
+   ],
+   "tags": [
+    "special",
+    "spicy"
+   ],
+   "verified": true,
+   "label": "₹400 / ₹270"
+  },
+  {
+   "id": "mughalai-fried-chicken",
+   "name": "Mughalai Fried Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Full",
+     "price": 400
+    },
+    {
+     "label": "Half",
+     "price": 270
+    }
+   ],
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "₹400 / ₹270"
+  },
+  {
+   "id": "dragon-fried-chicken",
+   "name": "Dragon Fried Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Full",
+     "price": 400
+    },
+    {
+     "label": "Half",
+     "price": 270
+    }
+   ],
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "₹400 / ₹270"
+  },
+  {
+   "id": "sutta-kozhi",
+   "name": "Sutta Kozhi",
+   "tamil": "சுட்ட கோழி",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": 450,
+   "verified": true,
+   "desc": "Chicken roasted over open fire.",
+   "label": "₹450"
+  },
+  {
+   "id": "dynamite-chicken",
+   "name": "Dynamite Chicken",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": 310,
+   "tags": [
+    "special",
+    "spicy"
+   ],
+   "verified": true,
+   "label": "₹310"
+  },
+  {
+   "id": "masala-chicken-65",
+   "name": "Masala Chicken 65",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": 220,
+   "verified": true,
+   "label": "₹220"
+  },
+  {
+   "id": "chicken-pakoda",
+   "name": "Chicken Pakoda",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": 240,
+   "verified": true,
+   "label": "₹240"
+  },
+  {
+   "id": "chicken-bits",
+   "name": "Chicken Bits",
+   "category": "chicken",
+   "diet": "nonveg",
+   "price": 240,
+   "verified": true,
+   "label": "₹240"
+  },
+  {
+   "id": "crab-fry",
+   "name": "Crab Fry (shell)",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": null,
+   "verified": true,
+   "label": "Seasonal"
+  },
+  {
+   "id": "crab-puttu",
+   "name": "Crab Puttu",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 260,
+   "verified": true,
+   "label": "₹260"
+  },
+  {
+   "id": "crab-pepper-fry",
+   "name": "Crab Pepper Fry (shell)",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": null,
+   "verified": true,
+   "label": "Seasonal"
+  },
+  {
+   "id": "tiger-prawn-65",
+   "name": "Tiger Prawn 65",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": null,
+   "verified": true,
+   "label": "Seasonal"
+  },
+  {
+   "id": "curry-leaf-tiger-prawn",
+   "name": "Curry Leaf Dusted Tiger Prawn",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": null,
+   "verified": true,
+   "label": "Seasonal"
+  },
+  {
+   "id": "ghee-tiger-prawn-pepper",
+   "name": "Ghee Tiger Prawn Pepper",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": null,
+   "verified": true,
+   "label": "Seasonal"
+  },
+  {
+   "id": "fried-tiger-prawn-chinese",
+   "name": "Fried Tiger Prawn, Chinese Style",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": null,
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "Seasonal"
+  },
+  {
+   "id": "prawn-65",
+   "name": "Prawn 65",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 260,
+   "verified": true,
+   "label": "₹260"
+  },
+  {
+   "id": "spl-fried-prawns",
+   "name": "Spl Fried Prawns",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 280,
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "₹280"
+  },
+  {
+   "id": "cheemeen-pollichathu",
+   "name": "Cheemeen Pollichathu",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 310,
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "desc": "Prawns in masala, wrapped in banana leaf and pan-roasted, Kerala style.",
+   "label": "₹310"
+  },
+  {
+   "id": "karimeen-fry",
+   "name": "Karimeen Fry",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 350,
+   "verified": true,
+   "label": "₹350"
+  },
+  {
+   "id": "karimeen-pollichathu",
+   "name": "Karimeen Pollichathu",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 350,
+   "tags": [
+    "signature"
+   ],
+   "verified": true,
+   "desc": "Pearl spot fish roasted in banana leaf with a thick masala.",
+   "label": "₹350"
+  },
+  {
+   "id": "spl-vanjaram-fry",
+   "name": "Spl Vanjaram Fish Fry",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 290,
+   "verified": true,
+   "label": "₹290"
+  },
+  {
+   "id": "vanjaram-tawa-fry",
+   "name": "Spl Vanjaram Fish Tawa Fry",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 270,
+   "verified": true,
+   "label": "₹270"
+  },
+  {
+   "id": "fish-65",
+   "name": "Fish 65",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 270,
+   "verified": true,
+   "label": "₹270"
+  },
+  {
+   "id": "spicy-fish-65",
+   "name": "Spicy Fish 65",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 280,
+   "tags": [
+    "spicy"
+   ],
+   "verified": true,
+   "label": "₹280"
+  },
+  {
+   "id": "nethili-65",
+   "name": "Nethili 65",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 200,
+   "verified": true,
+   "label": "₹200"
+  },
+  {
+   "id": "sura-puttu",
+   "name": "Sura Puttu",
+   "tamil": "சுறா புட்டு",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 180,
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "desc": "Shark, flaked and dry-tossed with onion and spice.",
+   "label": "₹180"
+  },
+  {
+   "id": "fish-puttu",
+   "name": "Fish Puttu",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 210,
+   "verified": true,
+   "label": "₹210"
+  },
+  {
+   "id": "squid-65",
+   "name": "Squid 65",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 240,
+   "verified": true,
+   "label": "₹240"
+  },
+  {
+   "id": "spl-fried-squid",
+   "name": "Spl Fried Squid",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 270,
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "₹270"
+  },
+  {
+   "id": "basa-steak",
+   "name": "Basa Extra Large Steak",
+   "category": "seafood",
+   "diet": "nonveg",
+   "price": 600,
+   "verified": true,
+   "desc": "Any sauce: Chinese, Indian or BBQ.",
+   "label": "₹600"
+  },
+  {
+   "id": "tangdi-kebab",
+   "name": "Tangdi Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 270,
+   "verified": true,
+   "label": "₹270"
+  },
+  {
+   "id": "malabar-chicken-tikka",
+   "name": "Malabar Chicken Tikka",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "reshmi-kebab",
+   "name": "Reshmi Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "angari-kebab",
+   "name": "Angari Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "malai-kebab",
+   "name": "Malai Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "irani-kebab",
+   "name": "Irani Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "kalmi-kebab",
+   "name": "Kalmi Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "hariyali-kebab",
+   "name": "Hariyali Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "chicken-tikka",
+   "name": "Chicken Tikka",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "hot-chicken-tikka",
+   "name": "Hot Chicken Tikka",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 250,
+   "tags": [
+    "special",
+    "spicy"
+   ],
+   "verified": true,
+   "label": "₹250"
+  },
+  {
+   "id": "mutton-seekh-kebab",
+   "name": "Mutton Seekh Kebab",
+   "category": "kebabs",
+   "diet": "nonveg",
+   "price": 300,
+   "verified": true,
+   "label": "₹300"
+  },
+  {
+   "id": "kola-urundai-kozhambu",
+   "name": "Kola Urundai Kozhambu",
+   "tamil": "கோலா உருண்டை குழம்பு",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": 250,
+   "verified": true,
+   "desc": "Minced mutton balls in a spiced kozhambu.",
+   "label": "₹250"
+  },
+  {
+   "id": "nalli-roast",
+   "name": "Nalli Roast",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Fry",
+     "price": 250
+    },
+    {
+     "label": "Kozhambu",
+     "price": 230
+    }
+   ],
+   "verified": true,
+   "desc": "Mutton shank, as a dry fry or in kozhambu.",
+   "label": "₹250 / ₹230"
+  },
+  {
+   "id": "nenjelumbu",
+   "name": "Nenjelumbu",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Fry",
+     "price": 250
+    },
+    {
+     "label": "Kozhambu",
+     "price": 230
+    }
+   ],
+   "verified": true,
+   "desc": "Mutton chest bone, as a dry fry or in kozhambu.",
+   "label": "₹250 / ₹230"
+  },
+  {
+   "id": "mutton-egg-pirattal",
+   "name": "Mutton Egg Pirattal",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": 230,
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "₹230"
+  },
+  {
+   "id": "pepper-paya",
+   "name": "Pepper Paya",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": 240,
+   "verified": true,
+   "desc": "Trotters slow-cooked with black pepper.",
+   "label": "₹240"
+  },
+  {
+   "id": "spl-mutton-kuruma",
+   "name": "Spl Mutton Kuruma",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": 230,
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "₹230"
+  },
+  {
+   "id": "spl-mutton-kozhambu",
+   "name": "Spl Mutton Kozhambu",
+   "tamil": "மட்டன் குழம்பு",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": 230,
+   "tags": [
+    "signature"
+   ],
+   "verified": true,
+   "desc": "The regulars' bowl with kuska and parotta.",
+   "label": "₹230"
+  },
+  {
+   "id": "mutton-kheema",
+   "name": "Mutton Kheema",
+   "category": "mutton",
+   "diet": "nonveg",
+   "price": 230,
+   "verified": true,
+   "label": "₹230"
+  },
+  {
+   "id": "crab-shell-masala",
+   "name": "Crab Shell Masala",
+   "category": "south-seafood",
+   "diet": "nonveg",
+   "price": 260,
+   "verified": true,
+   "label": "₹260"
+  },
+  {
+   "id": "crab-shelless-masala",
+   "name": "Crab Shelless Masala / Pepper Gravy",
+   "category": "south-seafood",
+   "diet": "nonveg",
+   "price": 260,
+   "verified": true,
+   "label": "₹260"
+  },
+  {
+   "id": "prawn-masala",
+   "name": "Prawn Masala / Thokku / Pepper Gravy",
+   "category": "south-seafood",
+   "diet": "nonveg",
+   "price": 260,
+   "verified": true,
+   "label": "₹260"
+  },
+  {
+   "id": "in-chettinad",
+   "name": "Chettinad",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Crab (shelless)",
+     "price": 260
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Squid",
+     "price": 230
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 230
+    },
+    {
+     "label": "Egg",
+     "price": 190
+    }
+   ],
+   "tags": [
+    "spicy"
+   ],
+   "verified": true,
+   "label": "from ₹190"
+  },
+  {
+   "id": "in-kadai",
+   "name": "Kadai",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 230
+    }
+   ],
+   "verified": true,
+   "label": "from ₹230"
+  },
+  {
+   "id": "in-hyderabadi",
+   "name": "Hyderabadi",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 230
+    }
+   ],
+   "verified": true,
+   "label": "from ₹230"
+  },
+  {
+   "id": "in-andhra",
+   "name": "Andhra",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Crab (shelless)",
+     "price": 260
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Squid",
+     "price": 230
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 230
+    },
+    {
+     "label": "Egg",
+     "price": 190
+    }
+   ],
+   "tags": [
+    "spicy"
+   ],
+   "verified": true,
+   "label": "from ₹190"
+  },
+  {
+   "id": "in-pepper-masala",
+   "name": "Pepper Masala",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Crab (shelless)",
+     "price": 260
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Squid",
+     "price": 230
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 230
+    },
+    {
+     "label": "Egg",
+     "price": 190
+    }
+   ],
+   "verified": true,
+   "label": "from ₹190"
+  },
+  {
+   "id": "in-masala",
+   "name": "Masala",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Crab (shelless)",
+     "price": 260
+    },
+    {
+     "label": "Squid",
+     "price": 220
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 210
+    },
+    {
+     "label": "Egg",
+     "price": 170
+    }
+   ],
+   "verified": true,
+   "label": "from ₹170"
+  },
+  {
+   "id": "in-pandia-s-spl",
+   "name": "Pandia's Spl",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Mutton",
+     "price": 270
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    }
+   ],
+   "tags": [
+    "signature"
+   ],
+   "verified": true,
+   "label": "₹270 / ₹240"
+  },
+  {
+   "id": "in-shahi-korma",
+   "name": "Shahi Korma",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Mutton",
+     "price": 270
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    }
+   ],
+   "verified": true,
+   "label": "₹270 / ₹240"
+  },
+  {
+   "id": "in-mughalai",
+   "name": "Mughalai",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Mutton",
+     "price": 270
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    },
+    {
+     "label": "Egg",
+     "price": 190
+    }
+   ],
+   "verified": true,
+   "label": "from ₹190"
+  },
+  {
+   "id": "butter-chicken-masala",
+   "name": "Butter Chicken Masala",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "With bone",
+     "price": 220
+    },
+    {
+     "label": "Boneless",
+     "price": 240
+    }
+   ],
+   "verified": true,
+   "label": "₹220 / ₹240"
+  },
+  {
+   "id": "chicken-tikka-masala",
+   "name": "Chicken Tikka Masala",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": 240,
+   "verified": true,
+   "label": "₹240"
+  },
+  {
+   "id": "mutton-kheema-masala",
+   "name": "Mutton Kheema Masala",
+   "category": "indian-main",
+   "diet": "nonveg",
+   "price": 240,
+   "verified": true,
+   "label": "₹240"
+  },
+  {
+   "id": "chettinad-omelette-curry",
+   "name": "Chettinad Omelette Curry",
+   "category": "indian-main",
+   "diet": "egg",
+   "price": 180,
+   "verified": true,
+   "label": "₹180"
+  },
+  {
+   "id": "cn-chilly",
+   "name": "Chilly",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Crab (shelless)",
+     "price": 260
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Squid",
+     "price": 240
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    },
+    {
+     "label": "Egg",
+     "price": 180
+    }
+   ],
+   "tags": [
+    "spicy"
+   ],
+   "verified": true,
+   "label": "from ₹180"
+  },
+  {
+   "id": "cn-manchurian",
+   "name": "Manchurian",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Squid",
+     "price": 240
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    },
+    {
+     "label": "Egg",
+     "price": 180
+    }
+   ],
+   "verified": true,
+   "label": "from ₹180"
+  },
+  {
+   "id": "cn-dragon",
+   "name": "Dragon",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    }
+   ],
+   "verified": true,
+   "label": "from ₹240"
+  },
+  {
+   "id": "cn-salt-pepper",
+   "name": "Salt & Pepper",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Crab (shelless)",
+     "price": 260
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Squid",
+     "price": 240
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    }
+   ],
+   "verified": true,
+   "label": "from ₹240"
+  },
+  {
+   "id": "cn-golden-fried",
+   "name": "Golden Fried",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    }
+   ],
+   "verified": true,
+   "label": "from ₹240"
+  },
+  {
+   "id": "cn-butter-fried",
+   "name": "Butter Fried",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Mutton",
+     "price": 260
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    }
+   ],
+   "verified": true,
+   "label": "from ₹240"
+  },
+  {
+   "id": "cn-honey-chilly",
+   "name": "Honey Chilly",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Tiger prawn",
+     "price": null
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    },
+    {
+     "label": "Egg",
+     "price": 180
+    }
+   ],
+   "verified": true,
+   "label": "from ₹180"
+  },
+  {
+   "id": "cn-hot-garlic",
+   "name": "Hot Garlic",
+   "category": "chinese",
+   "diet": "nonveg",
+   "price": null,
+   "variants": [
+    {
+     "label": "Prawn",
+     "price": 260
+    },
+    {
+     "label": "Fish",
+     "price": 250
+    },
+    {
+     "label": "Chicken",
+     "price": 240
+    },
+    {
+     "label": "Egg",
+     "price": 180
+    }
+   ],
+   "tags": [
+    "special"
+   ],
+   "verified": true,
+   "label": "from ₹180"
+  },
+  {
+   "id": "parotta",
+   "name": "Parotta (2 pcs)",
+   "category": "parotta",
+   "diet": "veg",
+   "price": 60,
+   "tags": [
+    "bestseller"
+   ],
+   "desc": "Soft, flaky layers. Ask for extra salna.",
+   "label": "₹60"
+  },
+  {
+   "id": "ghee-parotta",
+   "name": "Ghee Parotta",
+   "category": "parotta",
+   "diet": "veg",
+   "price": 65,
+   "verified": true,
+   "desc": "Crisped in pure ghee.",
+   "label": "₹65"
+  },
+  {
+   "id": "chicken-kothu",
+   "name": "Chicken Kothu Parotta",
+   "category": "parotta",
+   "diet": "nonveg",
+   "price": 190,
+   "desc": "Parotta chopped on the tawa with chicken, egg and salna.",
+   "label": "₹190"
+  },
+  {
+   "id": "egg-kothu",
+   "name": "Egg Kothu Parotta",
+   "category": "parotta",
+   "diet": "egg",
+   "price": 160,
+   "label": "₹160"
+  },
+  {
+   "id": "chapathi",
+   "name": "Chapathi (2 pcs)",
+   "category": "parotta",
+   "diet": "veg",
+   "price": 50,
+   "label": "₹50"
+  },
+  {
+   "id": "dosai",
+   "name": "Dosai",
+   "category": "tiffin",
+   "diet": "veg",
+   "price": 72,
+   "verified": true,
+   "desc": "Thin, crisp, with chutney and sambar.",
+   "label": "₹72"
+  },
+  {
+   "id": "egg-dosai",
+   "name": "Egg Dosai",
+   "category": "tiffin",
+   "diet": "egg",
+   "price": 95,
+   "label": "₹95"
+  },
+  {
+   "id": "kalakki",
+   "name": "Kalakki",
+   "tamil": "கலக்கி",
+   "category": "tiffin",
+   "diet": "egg",
+   "price": 70,
+   "desc": "Half-set egg swirled with salna. Eat it hot.",
+   "label": "₹70"
+  },
+  {
+   "id": "omelette",
+   "name": "Omelette",
+   "category": "tiffin",
+   "diet": "egg",
+   "price": 50,
+   "label": "₹50"
+  },
+  {
+   "id": "chettinad-chicken-soup",
+   "name": "Chettinad Chicken Soup",
+   "category": "soups",
+   "diet": "nonveg",
+   "price": 120,
+   "tags": [
+    "signature",
+    "spicy"
+   ],
+   "desc": "Peppery and a little fiery. Order it first.",
+   "label": "₹120"
+  },
+  {
+   "id": "mutton-bone-soup",
+   "name": "Mutton Bone Soup",
+   "category": "soups",
+   "diet": "nonveg",
+   "price": 140,
+   "label": "₹140"
+  },
+  {
+   "id": "chicken-fried-rice",
+   "name": "Chicken Fried Rice",
+   "category": "rice-noodles",
+   "diet": "nonveg",
+   "price": 220,
+   "label": "₹220"
+  },
+  {
+   "id": "chicken-noodles",
+   "name": "Chicken Noodles",
+   "category": "rice-noodles",
+   "diet": "nonveg",
+   "price": 220,
+   "label": "₹220"
+  },
+  {
+   "id": "veg-fried-rice",
+   "name": "Veg Fried Rice",
+   "category": "rice-noodles",
+   "diet": "veg",
+   "price": 170,
+   "label": "₹170"
+  },
+  {
+   "id": "shawarma-roll",
+   "name": "Chicken Shawarma Roll",
+   "category": "shawarma",
+   "diet": "nonveg",
+   "price": 140,
+   "label": "₹140"
+  },
+  {
+   "id": "shawarma-plate",
+   "name": "Shawarma Plate",
+   "category": "shawarma",
+   "diet": "nonveg",
+   "price": 200,
+   "label": "₹200"
+  },
+  {
+   "id": "vanilla-ice-cream",
+   "name": "Vanilla Ice Cream",
+   "category": "desserts",
+   "diet": "veg",
+   "price": 90,
+   "verified": true,
+   "label": "₹90"
+  },
+  {
+   "id": "strawberry-ice-cream",
+   "name": "Strawberry Ice Cream",
+   "category": "desserts",
+   "diet": "veg",
+   "price": 90,
+   "verified": true,
+   "label": "₹90"
+  },
+  {
+   "id": "chocolate-ice-cream",
+   "name": "Chocolate Ice Cream",
+   "category": "desserts",
+   "diet": "veg",
+   "price": 110,
+   "verified": true,
+   "label": "₹110"
+  },
+  {
+   "id": "pista-ice-cream",
+   "name": "Pista Ice Cream",
+   "category": "desserts",
+   "diet": "veg",
+   "price": 110,
+   "verified": true,
+   "label": "₹110"
+  },
+  {
+   "id": "butterscotch-ice-cream",
+   "name": "Butterscotch Ice Cream",
+   "category": "desserts",
+   "diet": "veg",
+   "price": 110,
+   "verified": true,
+   "label": "₹110"
+  }
+ ]
+}

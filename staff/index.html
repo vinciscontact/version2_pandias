@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pandia's · Staff</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#3a0a10">
+  <link rel="icon" href="../favicon.png" type="image/png">
+  <link rel="preload" href="../fonts/anek-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="staff.css">
+</head>
+<body>
+  <!-- ============================================================ sign in -->
+  <main class="login" data-login hidden>
+    <form class="login__card" data-login-form>
+      <img src="../img/logo-emblem.webp" alt="" width="120" height="82">
+      <h1>Good to see you</h1>
+      <p class="soft">Sign in to your Pandia's kitchen.</p>
+      <label>Email <input name="email" type="email" autocomplete="username" required></label>
+      <label>Password <input name="password" type="password" autocomplete="current-password" required minlength="6"></label>
+      <p class="err" data-login-err role="alert" hidden></p>
+      <button class="btn btn--dark" type="submit">Sign in</button>
+      <p class="soft small">Forgot your password? Ask the owner to reset it.</p>
+    </form>
+  </main>
+
+  <!-- ============================================================ the app -->
+  <div class="app" data-app hidden>
+    <aside class="side">
+      <div class="side__brand"><img src="../img/logo-emblem.webp" alt="" width="64" height="44"><b>Pandia's</b></div>
+      <nav class="tabs" aria-label="Screens">
+        <a href="#today" data-tab="today"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg><span>Today</span></a>
+        <a href="#orders" data-tab="orders"><svg viewBox="0 0 24 24"><path d="M3 13h18a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z"/><path d="M8 9q-2-2 0-4M12 9q-2-2 0-4M16 9q-2-2 0-4"/></svg><span>Orders</span><b class="badge" data-badge="orders" hidden></b></a>
+        <a href="#tables" data-tab="tables"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Tables</span><b class="badge" data-badge="tables" hidden></b></a>
+        <a href="#guests" data-tab="guests"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg><span>Guests</span></a>
+        <a href="#menu" data-tab="menu"><svg viewBox="0 0 24 24"><path d="M5 3h11a3 3 0 0 1 3 3v15H8a3 3 0 0 1-3-3z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span>Menu</span></a>
+        <a href="#numbers" data-tab="numbers"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Numbers</span></a>
+      </nav>
+      <div class="side__me">
+        <select data-branch aria-label="Branch" hidden></select>
+        <p data-branch-fixed></p>
+        <p class="soft small" data-me></p>
+        <div class="side__tools">
+          <button type="button" class="chip" data-sound>Sound off</button>
+          <button type="button" class="chip" data-logout>Sign out</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <p class="offline" data-offline hidden>Reconnecting… orders will appear as soon as the connection is back.</p>
+
+      <!-- TODAY -->
+      <section class="screen" data-screen="today" hidden>
+        <header class="bar"><div><h1>Today</h1><p class="soft" data-date></p></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="today">Download PDF</button></header>
+        <div class="kpis" data-kpis></div>
+        <h2 class="h2">Needs you now</h2>
+        <div class="attention" data-attention></div>
+        <h2 class="h2">On the floor</h2>
+        <div class="floor floor--mini" data-floor-mini></div>
+      </section>
+
+      <!-- ORDERS (kitchen board) -->
+      <section class="screen screen--board" data-screen="orders" hidden>
+        <header class="bar"><div><h1>Orders</h1><p class="soft" data-board-sum></p></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="orders">Download PDF</button></header>
+        <div class="board">
+          <div class="col"><h2>New <b data-n="received">0</b></h2><div class="col__list" data-col="received"></div></div>
+          <div class="col"><h2>Cooking <b data-n="preparing">0</b></h2><div class="col__list" data-col="preparing"></div></div>
+          <div class="col"><h2>Ready to serve <b data-n="ready">0</b></h2><div class="col__list" data-col="ready"></div></div>
+        </div>
+      </section>
+
+      <!-- TABLES (floor + bill) -->
+      <section class="screen" data-screen="tables" hidden>
+        <header class="bar"><div><h1>Tables</h1><p class="soft" data-floor-sum></p></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="tables">Download PDF</button></header>
+        <div class="legend"><span class="dot dot--free"></span>Free <span class="dot dot--wait"></span>Confirm guests <span class="dot dot--eat"></span>Eating <span class="dot dot--bill"></span>Wants bill <span class="dot dot--paid"></span>Paid</div>
+        <div class="floor" data-floor></div>
+      </section>
+
+      <!-- GUESTS (names, numbers, PINs) -->
+      <section class="screen" data-screen="guests" hidden>
+        <header class="bar"><h1>Guests</h1>
+          <div class="bar__tools"><div class="seg" role="tablist"><button type="button" data-gv="today" aria-selected="true">Today</button><button type="button" data-gv="all" aria-selected="false" hidden>All customers</button></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="guests">Download PDF</button></div>
+        </header>
+        <div class="menutools"><input type="search" placeholder="Name, number or table…" data-g-search aria-label="Find a guest"><button type="button" class="btn btn--line" data-g-export hidden>Download for Excel</button></div>
+        <div data-guests></div>
+      </section>
+
+      <!-- MENU (products) -->
+      <section class="screen" data-screen="menu" hidden>
+        <header class="bar"><div><h1>Menu</h1><p class="soft">Switch a dish off when it runs out. It shows “Sold out” on every table at once.</p></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="menu">Download PDF</button></header>
+        <div class="menutools"><input type="search" placeholder="Find a dish…" data-menu-search aria-label="Find a dish"><select data-menu-view aria-label="Show"><option value="all">All dishes</option><option value="off">Switched off</option><option value="removed">Recently removed</option></select><button type="button" class="btn btn--gold" data-add-dish hidden>+ Add dish</button></div>
+        <div class="menulist" data-menu></div>
+      </section>
+
+      <!-- NUMBERS -->
+      <section class="screen" data-screen="numbers" hidden>
+        <header class="bar"><h1>Numbers</h1>
+          <div class="bar__tools"><div class="seg" role="tablist" data-range><button type="button" data-days="0" aria-selected="true">Today</button><button type="button" data-days="6" aria-selected="false">7 days</button><button type="button" data-days="29" aria-selected="false">30 days</button></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="numbers">Download PDF</button></div>
+        </header>
+        <div class="kpis" data-nkpis></div>
+        <div class="grid2">
+          <div class="card"><h2 class="h3">Sales by hour</h2><div class="hours" data-hours></div></div>
+          <div class="card"><h2 class="h3">How guests paid</h2><div data-methods></div></div>
+          <div class="card"><h2 class="h3">Top dishes</h2><div data-top></div></div>
+          <div class="card"><h2 class="h3">Tables that earned most</h2><div data-tables-top></div></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- one table, opened from the floor -->
+    <dialog class="panel" data-panel aria-labelledby="panel-title">
+      <header class="panel__head"><div><h2 id="panel-title" data-p-title></h2><p class="soft" data-p-sub></p></div><button type="button" class="x" data-p-close aria-label="Close">×</button></header>
+      <div class="panel__body">
+        <div class="seat" data-p-seat hidden>
+          <p><b>New table.</b> Check the guests are really at the table, then send their order to the kitchen.</p>
+          <div class="stepper"><button type="button" data-p-gdec aria-label="One less">−</button><span><b data-p-guests>2</b> guests</span><button type="button" data-p-ginc aria-label="One more">+</button></div>
+          <button type="button" class="btn btn--gold" data-p-seatgo>Seated ✓ Send to kitchen</button>
+        </div>
+        <div class="guestline" data-p-guest></div>
+        <div class="porders" data-p-orders></div>
+        <dl class="sum">
+          <div><dt>Subtotal</dt><dd data-p-subtotal></dd></div>
+          <div data-p-discrow hidden><dt>Discount</dt><dd data-p-disc></dd></div>
+          <div><dt>GST <span data-p-rate></span>%</dt><dd data-p-tax></dd></div>
+          <div class="sum__total"><dt>Total</dt><dd data-p-total></dd></div>
+          <div data-p-paidrow hidden><dt>Paid</dt><dd data-p-paid></dd></div>
+        </dl>
+        <div class="disc" data-p-discbox hidden><input type="number" min="0" step="1" inputmode="numeric" placeholder="Discount ₹" data-p-discin aria-label="Discount in rupees"><button type="button" class="btn btn--line" data-p-discgo>Apply</button></div>
+        <div class="pay" data-p-pay>
+          <p>Collect <b data-p-due></b></p>
+          <div class="pay__ways"><button type="button" class="btn btn--dark" data-pay="cash">Cash</button><button type="button" class="btn btn--dark" data-pay="upi">UPI</button><button type="button" class="btn btn--dark" data-pay="card">Card</button></div>
+        </div>
+        <div class="panel__foot"><button type="button" class="btn btn--line" data-p-print>Print bill</button><button type="button" class="btn btn--line" data-p-pdf>Bill PDF</button><button type="button" class="btn btn--line" data-p-close-table>Close table</button></div>
+      </div>
+    </dialog>
+  </div>
+
+
+    <dialog class="panel" data-dish aria-labelledby="dish-title">
+      <form data-dish-form novalidate>
+        <header class="panel__head"><div><h2 id="dish-title" data-d-title>Add a dish</h2><p class="soft" data-d-sub></p></div><button type="button" class="x" data-d-close aria-label="Close">×</button></header>
+        <div class="panel__body dform">
+          <label>Name<input name="name" required maxlength="80" autocomplete="off" placeholder="e.g. Mutton Chukka"></label>
+          <label>Tamil name <small>optional</small><input name="tamil" maxlength="80" lang="ta" autocomplete="off" placeholder="மட்டன் சுக்கா"></label>
+          <label>Category<select name="cat" data-d-cat></select></label>
+          <label data-d-newcat hidden>New category name<input name="newcat" maxlength="60" autocomplete="off" placeholder="e.g. Combos"></label>
+          <div class="dform__two" data-d-prices>
+            <label>Price ₹<input name="price" type="number" inputmode="numeric" min="0" max="100000" step="1" placeholder="280"></label>
+            <label>Half price ₹ <small>only if it comes in Full / Half</small><input name="half" type="number" inputmode="numeric" min="0" max="100000" step="1" placeholder="leave empty"></label>
+          </div>
+          <fieldset class="dform__chips"><legend>Type</legend>
+            <label><input type="radio" name="diet" value="veg"><span><i class="dd dd--veg"></i>Veg</span></label>
+            <label><input type="radio" name="diet" value="egg"><span><i class="dd dd--egg"></i>Egg</span></label>
+            <label><input type="radio" name="diet" value="nonveg"><span><i class="dd dd--nonveg"></i>Non-veg</span></label>
+          </fieldset>
+          <label>Short description <small>optional, shown to guests</small><textarea name="desc" rows="2" maxlength="300" placeholder="One line on what makes it good."></textarea></label>
+          <fieldset class="dform__chips"><legend>Tags <small>optional</small></legend>
+            <label><input type="checkbox" name="tag_signature"><span>Signature</span></label>
+            <label><input type="checkbox" name="tag_bestseller"><span>Bestseller</span></label>
+            <label><input type="checkbox" name="tag_special"><span>Special</span></label>
+            <label><input type="checkbox" name="tag_spicy"><span>Spicy</span></label>
+          </fieldset>
+          <p class="err" data-d-err hidden></p>
+          <div class="panel__foot"><button type="button" class="btn btn--line" data-d-remove hidden>Remove dish</button><button type="submit" class="btn btn--dark" data-d-save>Save</button></div>
+        </div>
+      </form>
+    </dialog>
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+  <div class="printbill" data-print aria-hidden="true"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
