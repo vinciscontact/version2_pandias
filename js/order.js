@@ -32,6 +32,14 @@ async function get(path) {
   return r.json();
 }
 const MESSAGES = {
+  not_now: "One of your dishes isn't served at this hour. Please remove it.",
+  not_today: "One of your dishes isn't served today. Please remove it.",
+  bad_pickup: "Pick a pickup time at least 15 minutes from now.",
+  closed_then: "The branch is closed at that time. Pick another time.",
+  too_many_takeaways: "You already have two takeaway orders waiting. Call the branch to add to one.",
+  too_big: "That's a big order! Please call the branch to place it.",
+  name_required: "Please add your name.",
+  unknown_branch: "That branch isn't taking orders right now.",
   unknown_table: "We couldn't find this table. Please scan the QR again.",
   too_fast: "Hold on a second, your last order is still being sent.",
   too_many_orders: "This table has a lot of orders. Please ask your server.",
@@ -55,12 +63,14 @@ function friendly(err) {
 const branches = JSON.parse(document.body.dataset.branches);
 const params = new URLSearchParams(location.search);
 const branch = branches.find((b) => b.id === params.get("branch"));
-const table = (params.get("table") || "").slice(0, 6);
+// takeaway pre-order: order.html?takeaway=1&branch=… (no table; pickup slot; pay at the counter)
+const takeaway = params.get("takeaway") === "1";
+const table = takeaway ? "TA" : (params.get("table") || "").slice(0, 6);
 const VIEWS = $$("[data-view]");
 const show = (v) => {
   VIEWS.forEach((el) => (el.hidden = el.dataset.view !== v));
   $("[data-cartbar]").hidden = v !== "menu" || !cartCount();
-  $$(".obar__call").forEach((b) => (b.hidden = !branch || v === "pick"));
+  $$(".obar__call").forEach((b) => (b.hidden = !branch || v === "pick" || takeaway));
   scrollTo({ top: 0 });
 };
 const toast = (msg) => {
@@ -75,10 +85,16 @@ const toast = (msg) => {
 if (!branch || !table) {
   show("pick");
   if (params.get("branch")) $("select[name=branch]").value = params.get("branch");
+  if (takeaway) {
+    $("[data-pick-kicker]").textContent = "Pre-order takeaway";
+    $("[data-pick-title]").textContent = "Order ahead, pick it up hot";
+    $("[data-pick-sub]").textContent = "Choose your branch. Pay at the counter when you collect.";
+    $("[data-pick-table]").remove();
+  }
   $("[data-pick-form]").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
-    location.search = `?branch=${f.get("branch")}&table=${encodeURIComponent(String(f.get("table")).trim())}`;
+    location.search = takeaway ? `?takeaway=1&branch=${f.get("branch")}` : `?branch=${f.get("branch")}&table=${encodeURIComponent(String(f.get("table")).trim())}`;
   });
 }
 
@@ -111,10 +127,12 @@ async function start() {
     get("menu_items?select=id,name,category,price,available,diet,tamil,description,sort,deleted_at&order=sort,name"),
     get("menu_categories?select=id,name&order=sort"),
     get(`branches?select=parcel_charge&id=eq.${branch.id}`),
+    rpc("menu_prices", { p_branch: branch.id }).catch(() => null),
   ])
-    .then(([items, cats, br]) => {
+    .then(([items, cats, br, now]) => {
       parcelCharge = Number(br?.[0]?.parcel_charge || 0);
       syncMenu(items, cats);
+      if (now) applyNow(now);
       saveCart();
       paintCart();
     })
@@ -129,6 +147,10 @@ async function start() {
     }
     store.set(VISIT, null);
     token = null;
+  }
+  if (takeaway) {
+    show("menu");
+    return paintCart();
   }
   freshTable();
 }
@@ -198,6 +220,66 @@ function stepHTML(r, label, spice) {
     label ? `<span class="step__label">${esc(label)}</span>` : ""
   }<b class="step__price">${rupee(r.price)}</b><button type="button" class="step__add" data-add aria-label="Add ${esc(r.name)}">Add</button><span class="step__ctrl" hidden><button type="button" data-dec aria-label="One less ${esc(r.name)}">−</button><output data-qty>0</output><button type="button" data-inc aria-label="One more ${esc(r.name)}">+</button></span></div>`;
 }
+// this branch, right now: branch price, offers (old price struck out), serving hours, photos, pairings
+const PHOTOS = `${SB}/storage/v1/object/public/menu-photos/`;
+let pairsOf = {};
+const hhmm = (t) => {
+  const [h, m] = t.split(":").map(Number);
+  return `${h % 12 || 12}${m ? ":" + String(m).padStart(2, "0") : ""} ${h < 12 ? "am" : "pm"}`;
+};
+function applyNow(now) {
+  const by = Object.fromEntries(now.map((n) => [n.id, n]));
+  pairsOf = {};
+  for (const n of now) if (n.pairs?.length) pairsOf[baseOf(n.id)] = n.pairs;
+  for (const s of $$("[data-step]")) {
+    const n = by[s.dataset.step];
+    if (!n) continue;
+    s.dataset.price = String(n.price);
+    $(".step__price", s).innerHTML = (Number(n.list) > Number(n.price) ? `<s>${rupee(n.list)}</s> ` : "") + rupee(n.price);
+    const add = $("[data-add]", s);
+    s.classList.toggle("is-out", !n.available);
+    add.textContent = n.available ? "Add" : n.reason === "not_now" && n.from ? `From ${hhmm(n.from)}` : n.reason === "not_today" ? "Not today" : "Sold out";
+    add.disabled = !n.available;
+    if (!n.available) delete cart[s.dataset.step];
+    else if (cart[s.dataset.step]) cart[s.dataset.step].price = Number(n.price);
+  }
+  for (const d of $$(".odish")) {
+    const steps = $$("[data-step]", d).map((s) => by[s.dataset.step]).filter(Boolean);
+    if (!steps.length) continue;
+    const offer = steps.map((n) => n.offer).find(Boolean);
+    const tag = $(".odish__offer", d);
+    if (offer && !tag) $(".odish__top", d).insertAdjacentHTML("beforeend", `<span class="odish__offer">${esc(offer)}</span>`);
+    else if (!offer && tag) tag.remove();
+    const photo = steps[0].photo;
+    if (photo && !$(".odish__img", d)) d.insertAdjacentHTML("afterbegin", `<img class="odish__img" src="${PHOTOS}${esc(photo)}-400.webp" alt="" loading="lazy" decoding="async" width="400" height="300">`);
+  }
+}
+/** after adding a dish: "goes well with …" (the owner's pairings), at most two, gone in a few seconds */
+function suggestPair(key) {
+  const pairs = pairsOf[baseOf(key)];
+  if (!pairs?.length) return;
+  const steps = $$("[data-step]");
+  const opts = pairs.map((b) => steps.find((s) => baseOf(s.dataset.step) === b && !s.classList.contains("is-out") && !cart[s.dataset.step])).filter(Boolean).slice(0, 2);
+  if (!opts.length) return;
+  let bar = $("[data-pairbar]");
+  if (!bar) {
+    document.body.insertAdjacentHTML("beforeend", '<div class="pairbar" data-pairbar role="status" hidden></div>');
+    bar = $("[data-pairbar]");
+  }
+  bar.innerHTML = `<span>Goes well with</span>${opts.map((s) => `<button type="button" data-pair="${esc(s.dataset.step)}">${esc(s.dataset.name)} · ${rupee(s.dataset.price)} <b>+</b></button>`).join("")}<button type="button" class="pairbar__x" data-pair-x aria-label="No thanks">×</button>`;
+  bar.hidden = false;
+  clearTimeout(bar._t);
+  bar._t = setTimeout(() => (bar.hidden = true), 7000);
+}
+document.addEventListener("click", (e) => {
+  const p = e.target.closest("[data-pair]");
+  if (p) {
+    $(`[data-step="${CSS.escape(p.dataset.pair)}"] [data-add]`)?.click();
+    $("[data-pairbar]").hidden = true;
+  }
+  if (e.target.closest("[data-pair-x]")) $("[data-pairbar]").hidden = true;
+});
+
 /** bring the printed menu up to date with the database */
 function syncMenu(items, cats) {
   const live = Object.fromEntries(items.map((r) => [r.id, r]));
@@ -289,6 +371,7 @@ function wireMenu() {
     saveCart();
     paintCart();
     if (d > 0) navigator.vibrate?.(8);
+    if (d > 0 && line.qty === 1) suggestPair(key);
   };
   wireStep = (s) => {
     $("[data-add]", s).addEventListener("click", () => change(s, 1));
@@ -317,6 +400,7 @@ function wireMenu() {
 // ---------------------------------------------------------------- cart
 const sheet = $("[data-sheet]");
 function paintCart() {
+  if (takeaway) for (const l of cartLines()) l.parcel = true;
   for (const s of $$("[data-step]")) {
     const qty = cart[s.dataset.step]?.qty || 0;
     $("[data-add]", s).hidden = qty > 0;
@@ -338,7 +422,7 @@ function paintCart() {
           <b class="ln__price">${rupee(lineTotal(l))}</b></div>
         <div class="ln__opts">
           ${l.canSpice ? `<span class="seg" role="group" aria-label="Spice level">${["mild", "medium", "spicy"].map((v) => `<button type="button" data-spice="${v}" aria-pressed="${l.spice === v}">${v}</button>`).join("")}</span>` : ""}
-          <label class="ln__parcel"><input type="checkbox" data-parcel ${l.parcel ? "checked" : ""}> Parcel${parcelCharge ? ` (+${rupee(parcelCharge)} each)` : ""}</label>
+          ${takeaway ? (parcelCharge ? `<span class="ln__parcel">Packed (+${rupee(parcelCharge)} each)</span>` : "") : `<label class="ln__parcel"><input type="checkbox" data-parcel ${l.parcel ? "checked" : ""}> Parcel${parcelCharge ? ` (+${rupee(parcelCharge)} each)` : ""}</label>`}
         </div>
         <input class="ln__note" data-lnote maxlength="120" placeholder="Note for this dish (no onion, allergy…)" value="${esc(l.note)}">
       </li>`
@@ -349,6 +433,7 @@ function paintCart() {
 function wireCart() {
   $("[data-open-cart]").addEventListener("click", () => {
     paintGuest();
+    if (takeaway) fillPickup();
     sheet.showModal();
   });
   $("[data-close]").addEventListener("click", () => sheet.close());
@@ -393,7 +478,7 @@ const tenDigits = (raw) => {
 };
 const pretty = (d) => `${d.slice(0, 5)} ${d.slice(5)}`;
 function paintGuest(forceForm = false) {
-  const needed = !(token && visit?.hasGuest);
+  const needed = takeaway || !(token && visit?.hasGuest);
   const box = $("[data-guest]");
   const known = $("[data-guest-known]");
   $("[data-guest-err]").hidden = true;
@@ -420,8 +505,25 @@ function readGuest() {
   return { phone, name };
 }
 
+/** pickup slots: every 15 minutes from ~20 minutes ahead, for the next 8 hours */
+function fillPickup() {
+  const sel = $("[data-pickup]");
+  if (!sel) return;
+  const keep = sel.value;
+  const start = new Date(Math.ceil((Date.now() + 20 * 60e3) / (15 * 60e3)) * 15 * 60e3);
+  const opts = [];
+  for (let i = 0; i < 32; i++) {
+    const t = new Date(start.getTime() + i * 15 * 60e3);
+    const inMin = Math.round((t - Date.now()) / 60e3);
+    opts.push(`<option value="${t.toISOString()}">${t.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })} · in ${inMin < 60 ? inMin + " min" : Math.floor(inMin / 60) + " h " + (inMin % 60 ? (inMin % 60) + " min" : "")}</option>`);
+  }
+  sel.innerHTML = opts.join("");
+  if (keep && [...sel.options].some((o) => o.value === keep)) sel.value = keep;
+}
+
 let sending = false;
 async function send() {
+  if (takeaway) return sendTakeaway();
   const lines = cartLines();
   if (!lines.length || sending) return;
   const g = readGuest();
@@ -483,6 +585,61 @@ async function send() {
     sending = false;
     btn.disabled = false;
     btn.textContent = "Send to kitchen";
+  }
+}
+
+async function sendTakeaway() {
+  const lines = cartLines();
+  if (!lines.length || sending) return;
+  let g = readGuest();
+  if (g === "invalid") return;
+  if (!g?.name) {
+    paintGuest(true);
+    $("[data-guest-err]").textContent = "Please add your name and mobile, so we can hand the order to you.";
+    $("[data-guest-err]").hidden = false;
+    return;
+  }
+  const btn = $("[data-send]");
+  sending = true;
+  btn.disabled = true;
+  btn.textContent = "Placing…";
+  let key = store.get(SENDKEY);
+  if (!key) store.set(SENDKEY, (key = crypto.randomUUID()));
+  try {
+    const r = await rpc("place_takeaway", {
+      p_branch: branch.id,
+      p_lines: lines.map((l) => ({ id: l.key, qty: l.qty, spice: l.spice || null, note: l.note.trim() || null, parcel: true })),
+      p_name: g.name,
+      p_phone: g.phone,
+      p_pickup: $("[data-pickup]").value,
+      p_note: $("[data-note]").value.trim() || null,
+      p_key: key,
+    });
+    store.set(SENDKEY, null);
+    token = r.sessionToken;
+    store.set(VISIT, token);
+    store.set("pd-guest", JSON.stringify((guest = g)));
+    cart = {};
+    saveCart();
+    $("[data-note]").value = "";
+    sheet.close();
+    openVisit();
+    toast(`Order ${r.code} placed. The restaurant will accept it shortly.`);
+  } catch (x) {
+    const m = String(x?.message);
+    if (!/Failed to fetch|NetworkError/.test(m)) store.set(SENDKEY, null);
+    if (/phone_required|bad_phone|name_required/.test(m)) {
+      paintGuest(true);
+      $("[data-guest-err]").textContent = friendly(x);
+      $("[data-guest-err]").hidden = false;
+    } else {
+      if (/bad_pickup/.test(m)) fillPickup();
+      toast(friendly(x));
+    }
+  } finally {
+    sending = false;
+    btn.disabled = false;
+    btn.textContent = "Place takeaway order";
   }
 }
 
@@ -582,6 +739,7 @@ function paintVisit(v) {
   const slowest = pending.reduce((a, o) => (!a || ORDER.indexOf(o.status) < ORDER.indexOf(a.status) ? o : a), null);
   const billing = v.status !== "open";
   const paid = v.status === "paid" || v.status === "closed";
+  if (v.kind === "takeaway") return paintTakeaway(v, live);
   $("[data-status-title]").textContent = paid
     ? "All paid. Thank you!"
     : billing
@@ -629,6 +787,44 @@ function paintVisit(v) {
   if (v.feedbackGiven && !fbJustSent && !$("[data-fb-form]").hidden) showThanks(null, 5);
 }
 
+function paintTakeaway(v, live) {
+  const st = live.some((o) => o.status === "held") ? "held" : live.some((o) => ["received", "preparing"].includes(o.status)) ? (live.some((o) => o.status === "preparing") ? "preparing" : "received") : live.some((o) => o.status === "ready") ? "ready" : live.length ? "served" : "cancelled";
+  const at = new Date(v.pickupAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  $("[data-status-title]").textContent = { held: "Order placed", received: "Accepted", preparing: "Cooking now", ready: "Ready for pickup", served: "Collected. Enjoy!", cancelled: "Order cancelled" }[st];
+  const held = $("[data-held]");
+  held.hidden = false;
+  held.innerHTML = st === "held"
+    ? `<b>Waiting for ${esc(v.branchName)} to accept your order.</b> Pickup at ${at}.${v.branchPhone ? ` Questions? Call <a href="tel:${esc(v.branchPhone)}">${esc(v.branchPhone)}</a>.` : ""}`
+    : st === "served" || st === "cancelled"
+      ? `${esc(v.branchName)} · picked up${v.status === "closed" ? "" : ""}.`
+      : `<b>Pickup at ${at}</b> at ${esc(v.branchName)}. Show order <b>#${esc(live[0]?.code || "")}</b> at the counter.`;
+  $(".guests").hidden = true;
+  $("[data-pin-row]").hidden = true;
+  $("[data-order-more]").hidden = true;
+  $$("[data-waiter]").forEach((b) => (b.hidden = true));
+  $("[data-fb]").hidden = true;
+  $("[data-orders]").innerHTML = v.orders
+    .map(
+      (o) => `<div class="vorder ${o.status === "cancelled" ? "is-x" : ""}"><div class="vorder__head"><b>#${esc(o.code)}</b><em class="chip chip--${o.status}">${{ held: "Waiting", received: "Accepted", preparing: "Cooking", ready: "Ready", served: "Collected", cancelled: "Cancelled" }[o.status]}</em>
+        ${o.canCancel ? `<button type="button" class="vorder__x" data-cancel="${o.id}">Cancel</button>` : ""}</div>
+        <ul>${(o.items || []).map((i) => `<li class="${i.unavailable ? "is-out" : ""}"><span>${i.qty} × ${esc(i.name)}${i.unavailable ? ` <small class="out">Sorry, this ran out. Not charged.</small>` : ""}</span><span>${rupee(i.unavailable ? 0 : i.qty * i.price + Number(i.parcelFee || 0))}</span></li>`).join("")}</ul></div>`
+    )
+    .join("");
+  $("[data-b-sub]").textContent = rupee(v.subtotal);
+  $("[data-b-disc-row]").hidden = !Number(v.discount);
+  $("[data-b-disc]").textContent = "−" + rupee(v.discount);
+  $("[data-b-rate]").textContent = String(Number(v.taxPercent));
+  $("[data-b-tax]").textContent = rupee(v.tax);
+  $("[data-b-total]").textContent = rupee(v.total);
+  const paid = v.status === "paid" || v.status === "closed";
+  const bs = $("[data-bill-state]");
+  bs.textContent = paid ? "Paid" : "Pay on pickup";
+  bs.dataset.state = paid ? "paid" : "open";
+  $("[data-ask-bill]").hidden = true;
+  $("[data-bill-note]").textContent = paid ? `Paid ${rupee(v.paid)}. Thank you!` : "Pay at the counter when you pick up: cash, card or UPI.";
+  if (v.status === "closed" || st === "cancelled") clearInterval(poll);
+}
+
 // ---------------------------------------------------------------- feedback → Google
 let rating = 0;
 function wireFeedback() {
@@ -673,7 +869,13 @@ function showThanks(url, r) {
 
 // ---------------------------------------------------------------- go (last, once everything above exists)
 if (branch && table) {
-  $("[data-table-label]").textContent = `Table ${table}`;
+  $("[data-table-label]").textContent = takeaway ? "Takeaway" : `Table ${table}`;
+  if (takeaway) {
+    document.title = "Pre-order takeaway | Hotel Pandia's";
+    $("[data-pickup-row]").hidden = false;
+    $("[data-send]").textContent = "Place takeaway order";
+    $(".sheet__fine").textContent = "Taxes as applicable. Pay at the counter when you pick up.";
+  }
   $("[data-branch-label]").textContent = `Hotel Pandia's, ${branch.name}`;
   for (const s of ["[data-count-where]", "[data-join-where]"]) $(s).textContent = `Table ${table} · ${branch.name}`;
   start();

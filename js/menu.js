@@ -55,7 +55,7 @@ function refreshText(li, r, head) {
 async function live() {
   const get = (path) => fetch(`${SB}/rest/v1/${path}`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
   const [items, cats] = await Promise.all([
-    get("menu_items?select=id,name,category,price,diet,tamil,description,deleted_at&order=sort,name"),
+    get("menu_items?select=id,name,category,price,diet,tamil,description,deleted_at,photo&order=sort,name"),
     get("menu_categories?select=id,name,blurb&order=sort"),
   ]);
   const byId = Object.fromEntries(items.map((r) => [r.id, r]));
@@ -72,6 +72,7 @@ async function live() {
       continue;
     }
     $("b", li).innerHTML = priceHTML(keep);
+    if (keep[0].photo && !$(".mdish__img", li)) li.insertAdjacentHTML("afterbegin", `<img class="mdish__img" src="${SB}/storage/v1/object/public/menu-photos/${esc(keep[0].photo)}-400.webp" alt="" loading="lazy" decoding="async" width="400" height="300">`);
     refreshText(li, keep[0], "h3");
   }
   // dishes added after the page was printed

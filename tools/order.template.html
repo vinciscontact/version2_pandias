@@ -25,12 +25,12 @@
     <!-- no table in the link: pick one -->
     <section class="oview" data-view="pick" hidden>
       <div class="ocard">
-        <p class="kicker">Order at your table</p>
-        <h1>Scan the QR on your table</h1>
-        <p class="soft">It opens this page with your table already set. No QR handy? Pick it here.</p>
+        <p class="kicker" data-pick-kicker>Order at your table</p>
+        <h1 data-pick-title>Scan the QR on your table</h1>
+        <p class="soft" data-pick-sub>It opens this page with your table already set. No QR handy? Pick it here.</p>
         <form class="oform" data-pick-form>
           <label>Branch <select name="branch" required>{{BRANCH_OPTIONS}}</select></label>
-          <label>Table number <input name="table" inputmode="numeric" pattern="[0-9A-Za-z-]{1,6}" required placeholder="e.g. 7"></label>
+          <label data-pick-table>Table number <input name="table" inputmode="numeric" pattern="[0-9A-Za-z-]{1,6}" required placeholder="e.g. 7"></label>
           <button class="pill pill--dark" type="submit">Start ordering</button>
         </form>
       </div>
@@ -149,6 +149,7 @@
       <div class="sheet__head"><h2 id="sheet-title">Your order</h2><button type="button" class="sheet__x" data-close aria-label="Close">×</button></div>
       <ul class="sheet__lines" data-lines></ul>
       <label class="sheet__note">Anything else for the kitchen? <textarea rows="2" maxlength="200" placeholder="Less oil, extra salna…" data-note></textarea></label>
+      <label class="sheet__note" data-pickup-row hidden>Pickup time <select data-pickup class="pickup"></select></label>
       <div class="guest" data-guest hidden>
         <p class="guest__title">Your details</p>
         <label>Your name <input name="gname" maxlength="80" autocomplete="given-name" placeholder="So we bring your order to you"></label>

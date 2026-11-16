@@ -24,17 +24,38 @@ upload this folder as it is (Hostinger `public_html`, Vercel, any static host).
 `staff/` behind the small emblem in the footer's bottom-right corner (not indexed, not labelled).
 Sign in with a staff account; each role sees only its screens:
 
-| Screen | Owner | Manager | Cashier | Kitchen |
-|---|---|---|---|---|
-| Today: greeting, the day's numbers, "needs you now" | ✓ | ✓ | ✓ | |
-| Orders: kitchen board, New → Cooking → Ready, Can't make | ✓ | ✓ | ✓ | ✓ |
-| Tables: Seated ✓, bill, discount (manager), Cash / UPI / Card, print, close | ✓ | ✓ | ✓ | |
-| Guests: today's tables with name, number, PIN, people, bill; tap to open the table | ✓ | ✓ | ✓ | |
-| Guests → All customers: search, visits, spend, download for Excel | ✓ | ✓ (own branch) | | |
-| Menu: switch dishes off when they run out | ✓ | ✓ | | ✓ |
-| Menu: change prices (with history), add / edit / remove dishes, Recently removed + Restore | ✓ | | | |
-| Numbers: sales by hour, payment split, top dishes, best tables, per head | ✓ | ✓ | | |
-| Download PDF on every screen, and a PDF of one table's bill | ✓ | ✓ | ✓ | ✓ |
+| Screen | Owner | Manager | Cashier | Waiter | Kitchen |
+|---|---|---|---|---|---|
+| Today: numbers, "needs you now" (confirm guests, new takeaways, bills, calls, late food, low ratings, low stock) | ✓ | ✓ | ✓ | | |
+| Orders: kitchen board, Can't make, combo contents, takeaway pickup times, Just served → Recall | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Tables: Seated ✓, take an order on the phone (captain mode), bill, loyalty reward, remake, pay, void a payment (manager), close with a reason | ✓ | ✓ | ✓ | ✓ | |
+| Takeaway pre-orders (`order.html?takeaway=1`): accept, cook, pay on pickup | ✓ | ✓ | ✓ | ✓ | |
+| Guests: today with name, number, PIN; All customers (owner, manager) | ✓ | ✓ | ✓ | | |
+| Menu: sold out at this branch | ✓ (all branches) | ✓ | | | ✓ |
+| Menu: prices + history, add / edit / remove dishes, photos, serving hours and days, goes-well-with, combos, branch prices, offers, category hours | ✓ | | | | |
+| Numbers (today / 7 / 30 days); Reports (month, quarter, year, custom; vs last period and last year; branches; dishes; never sold; kitchen timing; GST; sales vs expenses; Excel + PDF) | ✓ | ✓ | | | |
+| Feedback: low ratings first, resolve with a note | ✓ | ✓ | | | |
+| Bills: every bill with filters, reprint, PDF, Excel | ✓ | ✓ | ✓ | | |
+| Close the day: settle tables, count the cash, day report | ✓ | ✓ | view | | |
+| Stock: levels, low warnings, purchases (+ expense), used / wasted, counts | ✓ | ✓ | | | ✓ (used / wasted) |
+| Expenses: by category, cash spends lower the drawer | ✓ | ✓ | ✓ (today, up to ₹5,000) | | |
+| Attendance: everyone checks in / out; managers see and fix | ✓ | ✓ | own | own | own |
+| Activity: who did what (money, orders, menu, team, setup) | ✓ | ✓ | | | |
+| Team: add people (sign-in name or email), roles, new password, switch off | ✓ | ✓ (cashier / waiter / kitchen) | | | |
+| Setup: branches (address, hours, GST, GSTIN, packing, Seated check), tables in bulk, QR cards, loyalty, the 12-month data rule | ✓ | | | | |
+| Download PDF on every screen | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+Screens live in `src/staff-app.js` (core), `staff-more.js` (bills, close day, activity, team, setup), `staff-daily.js`
+(take order, takeaway, feedback, reports, loyalty), `staff-menuplus.js` (owner menu tools), `staff-business.js`
+(stock, expenses, attendance) and `staff-pdf.js` (PDFs, loaded on demand). Staff accounts are created by the
+`supabase/functions/staff-admin` server function (it holds the service key; the browser never does).
+
+**Looks and installs like an iPhone app** (`src/staff-ios.js`, the "iOS layer" at the end of `staff/staff.css`).
+On phones and iPad portrait there is a tab bar with the four screens that role uses most, plus **More** (every
+other screen, branch, sound, check-in, sign out). Every dialog opens as a bottom sheet you can drag down to close.
+Wide screens keep an iPad-style sidebar. To install: open `/staff/` in Safari → Share → **Add to Home Screen**
+(Android Chrome: **More → Install on this phone**). `staff/sw.js` keeps the app's own files for a quick start
+and short outages; orders, bills and guest data are never stored on the phone.
 
 Source: `src/staff-app.js` → built to `staff/app.js`; the PDF maker (`src/staff-pdf.js`) is split into
 `staff/chunks/` and only downloads when someone taps **Download PDF**. Once, `npm install`; then:

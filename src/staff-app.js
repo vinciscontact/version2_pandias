@@ -12,8 +12,14 @@
 // Data refreshes live: any change in this branch triggers one small re-read (debounced).
 
 import { createClient } from "@supabase/supabase-js";
+import { initMore } from "./staff-more.js";
+import { initDaily } from "./staff-daily.js";
+import { initMenuPlus, photoUrl } from "./staff-menuplus.js";
+import { initBusiness } from "./staff-business.js";
+import { initIOS } from "./staff-ios.js";
 
-const sb = createClient("https://vlbnicfcjddaehyjindr.supabase.co", "sb_publishable_X4LBIcYNnHLTqfgByI8dWA_OW2JPggP", {
+const PUBLISHABLE = "sb_publishable_X4LBIcYNnHLTqfgByI8dWA_OW2JPggP"; // public by design; the database decides what it may do
+const sb = createClient("https://vlbnicfcjddaehyjindr.supabase.co", PUBLISHABLE, {
   auth: { persistSession: true, storageKey: "pd-staff" },
 });
 
@@ -26,11 +32,11 @@ const clock = (iso) => new Date(iso).toLocaleTimeString("en-IN", { hour: "numeri
 /** +919876543210 → 98765 43210 */
 const fmtPhone = (p) => String(p || "").replace(/^\+91(\d{5})(\d{5})$/, "$1 $2");
 const telLink = (p) => (p ? `<a class="tel" href="tel:${esc(p)}">${esc(fmtPhone(p))}</a>` : "");
-const ROLE = { admin: "Owner", manager: "Manager", kitchen: "Kitchen", cashier: "Cashier" };
+const ROLE = { admin: "Owner", manager: "Manager", kitchen: "Kitchen", cashier: "Cashier", waiter: "Waiter" };
 const SCREENS = {
   today: ["admin", "manager", "cashier"],
-  orders: ["admin", "manager", "kitchen", "cashier"],
-  tables: ["admin", "manager", "cashier"],
+  orders: ["admin", "manager", "kitchen", "cashier", "waiter"],
+  tables: ["admin", "manager", "cashier", "waiter"],
   guests: ["admin", "manager", "cashier"],
   menu: ["admin", "manager", "kitchen"],
   numbers: ["admin", "manager"],
@@ -51,7 +57,39 @@ const MSG = {
   bad_price: "Use a whole number of rupees, like 280.",
   not_seated: "Confirm the guests first (Seated ✓ on Tables).",
   too_late: "That order is already finished.",
-  "Invalid login credentials": "That email or password doesn't match.",
+  "Invalid login credentials": "That sign-in name or password doesn't match.",
+  note_required: "Add a short note saying what happened.",
+  reason_required: "Choose walk-out or void, and add a note.",
+  tables_open: "Some tables are still open. Settle them first.",
+  already_closed: "This day is already closed.",
+  already_voided: "That payment was already voided.",
+  table_in_use: "Guests are at that table right now. Close it first.",
+  login_taken: "That sign-in name or email is already used.",
+  weak_password: "Use a password of 8 or more characters.",
+  bad_login: "Sign-in names use small letters, numbers and dots (3 or more).",
+  branch_required: "Choose a branch.",
+  not_yourself: "You can't switch off or change your own role.",
+  bad_phone: "That mobile number doesn't look right.",
+  confirm_mismatch: "The words didn't match. Nothing was removed.",
+  too_recent: "Only records older than 12 months can be archived.",
+  bad_range: "Check the dates or numbers (the first must come before the second).",
+  offer_needs_dishes: "Pick at least one dish or category for the offer.",
+  bad_offer: "A % offer must be between 1 and 90.",
+  manager_needed: "The desk can record today's cash spends up to ₹5,000. Ask a manager for more.",
+  day_closed: "That day is already closed, so its cash can't change.",
+  forgot_checkout: "You forgot to check out last time. A manager will fix the hours. Check in again now.",
+  not_clocked_in: "You're not checked in.",
+  bad_qty: "Enter a quantity.",
+  bad_hours: "Set both From and To, or leave both empty.",
+  not_now: "One of those dishes isn't served at this hour.",
+  not_today: "One of those dishes isn't served today.",
+  bad_photo: "That photo couldn't be saved. Try another.",
+  "Payload too large": "That photo is too big. Try a smaller one.",
+  guests_required: "Set how many guests are at the table.",
+  not_enough_stamps: "Not enough stamps for the reward yet.",
+  no_guest: "This table has no guest number, so no stamps.",
+  unknown_item: "One of those dishes is no longer on the menu. Refresh and try again.",
+  unavailable: "One of those dishes just sold out.",
 };
 const friendly = (e) => {
   const m = String(e?.message || e);
@@ -119,6 +157,12 @@ let tables = []; // labels
 let sessions = []; // open table visits
 let orders = []; // live orders (held / received / preparing / ready)
 let calls = []; // waiter / bill calls
+let takeaways = []; // pre-orders from the website (no table)
+let served = []; // served in the last 30 min (for recall)
+let lowRatings = []; // unresolved 1-3 star ratings, last 2 days
+let lowStockList = []; // stock at or under its "low at"
+/** run a slow check at most every few minutes (not on every live update) */
+const every = (ms, fn) => { let at = 0, last; return async () => (Date.now() - at > ms ? ((at = Date.now()), (last = await fn())) : last); };
 let today = { sales: 0, served: 0, guests: 0, visits: 0, orders: 0 };
 let channel = null;
 let openSession = null; // the table shown in the panel
@@ -134,7 +178,9 @@ $("[data-login-form]").addEventListener("submit", async (e) => {
   err.hidden = true;
   const btn = $("button[type=submit]", e.target);
   btn.disabled = true;
-  const { error } = await sb.auth.signInWithPassword({ email: String(f.get("email")).trim(), password: String(f.get("password")) });
+  const id = String(f.get("email")).trim().toLowerCase();
+  const email = id.includes("@") ? id : `${id}@staff.pandias.invalid`;
+  const { error } = await sb.auth.signInWithPassword({ email, password: String(f.get("password")) });
   btn.disabled = false;
   if (error) return (err.textContent = friendly(error)), (err.hidden = false);
   boot();
@@ -148,7 +194,7 @@ $("[data-logout]").addEventListener("click", async () => {
 async function boot() {
   const { data: auth } = await sb.auth.getSession();
   if (!auth.session) return showLogin();
-  const { data: staff } = await sb.from("staff").select("user_id, name, role, branch_id, active").eq("user_id", auth.session.user.id).maybeSingle();
+  const { data: staff } = await sb.from("staff").select("user_id, name, role, branch_id, active, phone").eq("user_id", auth.session.user.id).maybeSingle();
   if (!staff || !staff.active) {
     await sb.auth.signOut();
     showLogin();
@@ -157,11 +203,9 @@ async function boot() {
     return;
   }
   me = staff;
-  const { data: br } = await sb.from("branches").select("id, name, tax_percent, active, sort, seat_confirm").order("sort");
-  branches = (br || []).filter((b) => b.active || me.role === "admin");
+  await reloadBranches();
   if (me.role === "admin") {
     const sel = $("[data-branch]");
-    sel.innerHTML = branches.map((b) => `<option value="${b.id}">${esc(b.name)}</option>`).join("");
     const saved = localStorage.getItem("pd-staff-branch");
     branch = branches.some((b) => b.id === saved) ? saved : branches[0]?.id;
     sel.value = branch;
@@ -178,6 +222,7 @@ async function boot() {
   }
   $("[data-me]").textContent = `${me.name} · ${ROLE[me.role]}`;
   $$("[data-tab]").forEach((a) => (a.hidden = !SCREENS[a.dataset.tab].includes(me.role)));
+  ios.setup(me.role);
   $("[data-login]").hidden = true;
   $("[data-app]").hidden = false;
   route();
@@ -185,6 +230,16 @@ async function boot() {
   await reload();
   setInterval(tickAges, 20000);
   setInterval(reload, 120000); // safety net if a live message is missed
+}
+
+async function reloadBranches() {
+  const { data: br } = await sb.from("branches").select("id, name, tax_percent, active, sort, seat_confirm, parcel_charge").order("sort");
+  branches = (br || []).filter((b) => b.active || me.role === "admin");
+  if (me.role === "admin") {
+    const sel = $("[data-branch]");
+    sel.innerHTML = branches.map((b) => `<option value="${b.id}">${esc(b.name)}</option>`).join("");
+    if (branch) sel.value = branch;
+  }
 }
 
 // ---------------------------------------------------------------- screens
@@ -195,8 +250,15 @@ function route() {
   $$("[data-screen]").forEach((s) => (s.hidden = s.dataset.screen !== screen));
   $$("[data-tab]").forEach((a) => a.toggleAttribute("aria-current", a.dataset.tab === screen));
   current = screen;
+  ios.route(screen);
   if (screen === "menu") loadMenu();
   if (screen === "guests") loadGuests();
+  if (daily.roles[screen]) daily.load(screen);
+  if (business.roles[screen]) business.load(screen);
+  if (more.roles[screen])
+    Promise.resolve(more.load(screen)).then(async () => {
+      if (screen === "setup") $("[data-s-data]").insertAdjacentHTML("beforeend", await daily.loyaltyCard());
+    });
   if (screen === "numbers") loadNumbers();
   paint();
 }
@@ -224,17 +286,23 @@ document.addEventListener("visibilitychange", () => !document.hidden && me && re
 async function reload() {
   if (!branch) return;
   const since = dayStart(0);
-  const [t, s, o, c, pay, done] = await Promise.all([
+  const [t, s, o, c, pay, done, sv, lr] = await Promise.all([
     sb.from("dining_tables").select("label").eq("branch_id", branch).eq("active", true),
-    sb.from("table_sessions").select("id, table_label, status, subtotal, tax, discount, total, opened_at, pin, guests, seated_at, customers(name, phone)").eq("branch_id", branch).in("status", ["open", "bill_requested", "paid"]),
-    sb.from("orders").select("id, code, table_label, session_id, status, note, total, created_at, customers(name, phone), order_items(id, name, qty, unit_price, spice, note, parcel, parcel_fee, unavailable_at)").eq("branch_id", branch).in("status", ["held", "received", "preparing", "ready"]).order("created_at"),
+    sb.from("table_sessions").select("id, kind, pickup_at, table_label, status, subtotal, tax, discount, total, opened_at, pin, guests, seated_at, customers(name, phone, stamps)").eq("branch_id", branch).in("status", ["open", "bill_requested", "paid"]),
+    sb.from("orders").select("id, code, table_label, session_id, status, note, total, created_at, customers(name, phone), order_items(id, item_id, name, qty, unit_price, spice, note, parcel, parcel_fee, unavailable_at)").eq("branch_id", branch).in("status", ["held", "received", "preparing", "ready"]).order("created_at"),
     sb.from("service_calls").select("id, table_label, kind, created_at").eq("branch_id", branch).is("resolved_at", null).order("created_at"),
-    sb.from("payments").select("amount").eq("branch_id", branch).gte("created_at", since),
+    sb.from("payments").select("amount").eq("branch_id", branch).gte("created_at", since).is("voided_at", null),
     sb.from("table_sessions").select("guests, guests_max, status").eq("branch_id", branch).gte("opened_at", since),
+    sb.from("orders").select("id, code, table_label, session_id, served_at").eq("branch_id", branch).eq("status", "served").gte("served_at", new Date(Date.now() - 30 * 60e3).toISOString()).order("served_at", { ascending: false }).limit(12),
+    lowRatingsEvery(),
   ]);
   if (t.error || s.error || o.error) return;
   tables = (t.data || []).map((r) => r.label).sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
-  sessions = s.data || [];
+  sessions = (s.data || []).filter((x) => x.kind !== "takeaway");
+  takeaways = (s.data || []).filter((x) => x.kind === "takeaway");
+  served = sv.data || [];
+  lowRatings = lr || [];
+  lowStockList = (await lowStockEvery()) || [];
   const fresh = (o.data || []).filter((x) => x.status === "received" && !seenOrders.has(x.id));
   if (seenOrders.size && fresh.length) sound.chime(2); // something new for the kitchen
   for (const x of o.data || []) seenOrders.add(x.id);
@@ -251,6 +319,8 @@ async function reload() {
   paint();
   if (openSession && $("[data-panel]").open) openPanel(openSession.id);
   if (current === "guests" && gView === "today") loadGuests();
+  more.refreshIfOpen(current);
+  daily.warmMenu(); // combo contents for tickets; branch prices for taking orders
 }
 
 // ---------------------------------------------------------------- paint everything visible
@@ -270,7 +340,10 @@ function paint() {
   paintAttention();
   paintBoard();
   paintFloor();
-  const waiting = sessions.filter((s) => tableState(s) === "wait").length + calls.length;
+  const ta = daily.takeawayHTML(takeaways, orders);
+  $("[data-ta-today]").innerHTML = ta;
+  $("[data-ta-tables]").innerHTML = ta;
+  const waiting = sessions.filter((s) => tableState(s) === "wait").length + calls.length + takeaways.filter((t) => heldFor(t.id)).length;
   badge("tables", waiting);
   badge("orders", orders.filter((o) => o.status === "received").length);
 }
@@ -296,6 +369,12 @@ function paintAttention() {
     if (tableState(s) === "wait")
       items.push({ cls: "wait", t: `Table ${s.table_label}: confirm ${s.guests || "the"} guests`, sub: `${s.customers?.name ? s.customers.name + " · " + fmtPhone(s.customers.phone) + " · " : ""}Their first order is waiting for Seated ✓`, go: s.id });
   }
+  for (const t of takeaways.filter((t) => heldFor(t.id)))
+    items.push({ cls: "wait", t: `New takeaway: ${t.customers?.name || "Guest"}, pickup ${clock(t.pickup_at)}`, sub: `${fmtPhone(t.customers?.phone)} · ${rupee(t.total)} · accept it to send it to the kitchen`, go: t.id });
+  for (const f of lowRatings)
+    items.push({ cls: "late", t: `${f.rating}★ rating from table ${f.table_label}`, sub: f.comment ? `“${f.comment.slice(0, 90)}” · call or visit the guest` : "Call or visit the guest, then mark it resolved", href: "#feedback" });
+  if (lowStockList.length)
+    items.push({ cls: "late", t: `Low stock: ${lowStockList.slice(0, 3).map((l) => l.name).join(", ")}${lowStockList.length > 3 ? ` +${lowStockList.length - 3} more` : ""}`, sub: lowStockList.slice(0, 3).map((l) => `${l.name} ${Number(l.on_hand)} ${l.unit} left`).join(" · "), href: "#stock" });
   for (const c of calls) {
     const s = sessionByTable()[c.table_label];
     items.push({ cls: c.kind === "bill" ? "bill" : "call", t: c.kind === "bill" ? `Table ${c.table_label} wants the bill` : `Table ${c.table_label} called a waiter`, sub: `${mins(c.created_at)} min ago`, go: s?.id, call: c.id });
@@ -306,7 +385,7 @@ function paintAttention() {
     ? items
         .map(
           (i) => `<div class="att att--${i.cls}"><div><b>${esc(i.t)}</b><span>${esc(i.sub)}</span></div>
-          <div class="att__go">${i.call ? `<button type="button" class="btn btn--line btn--sm" data-done-call="${i.call}">Done</button>` : ""}${i.go ? `<button type="button" class="btn btn--dark btn--sm" data-open="${i.go}">Open</button>` : ""}</div></div>`
+          <div class="att__go">${i.call ? `<button type="button" class="btn btn--line btn--sm" data-done-call="${i.call}">Done</button>` : ""}${i.go ? `<button type="button" class="btn btn--dark btn--sm" data-open="${i.go}">Open</button>` : ""}${i.href ? `<a class="btn btn--dark btn--sm" href="${i.href}">Open</a>` : ""}</div></div>`
         )
         .join("")
     : `<div class="calm"><b>All caught up.</b><span>Nothing needs you right now.</span></div>`;
@@ -314,8 +393,8 @@ function paintAttention() {
 function tile(label, s) {
   const st = tableState(s);
   const word = { free: "Free", wait: "Confirm guests", eat: "Eating", bill: "Wants bill", paid: "Paid" }[st];
-  return `<button type="button" class="tile tile--${st}" ${s ? `data-open="${s.id}"` : "disabled"}>
-    <b>${esc(label)}</b><span>${word}</span>${
+  return `<button type="button" class="tile tile--${st}" ${s ? `data-open="${s.id}"` : daily.canTake() ? `data-take="${esc(label)}" title="Take an order"` : "disabled"}>
+    <b>${esc(label)}</b><span>${s ? word : daily.canTake() ? "Free · tap to order" : word}</span>${
       s
         ? `${s.customers ? `<em class="tile__who">${esc(s.customers.name || "Guest")}<br>${esc(fmtPhone(s.customers.phone))}</em>` : ""}<small>${s.pin && s.status !== "paid" ? `PIN <b class="tile__pin">${esc(s.pin)}</b> · ` : ""}${s.guests ? s.guests + " ppl · " : ""}${rupee(s.total)} · ${mins(s.opened_at)}m</small>`
         : ""
@@ -344,11 +423,11 @@ function paintBoard() {
             const s = sessions.find((x) => x.id === o.session_id);
             const m = mins(o.created_at);
             return `<article class="ticket ${m >= 20 ? "is-late" : m >= 12 ? "is-warm" : ""}">
-            <header><b class="ticket__table">T${esc(o.table_label)}</b><span>#${esc(o.code)}</span><span class="age" data-age="${o.created_at}">${m < 1 ? "now" : m + "m"}</span></header>
+            <header><b class="ticket__table">${o.table_label === "TA" ? "TA" : "T" + esc(o.table_label)}</b>${o.table_label === "TA" ? `<span class="tag">pickup ${clock(takeaways.find((t) => t.id === o.session_id)?.pickup_at || o.created_at)}</span>` : ""}<span>#${esc(o.code)}</span><span class="age" data-age="${o.created_at}">${m < 1 ? "now" : m + "m"}</span></header>
             ${o.customers || s?.guests ? `<p class="ticket__who">${o.customers ? `For <b>${esc(o.customers.name || "Guest")}</b> · ${telLink(o.customers.phone)}` : ""}${s?.guests ? ` · ${s.guests} at the table` : ""}</p>` : ""}
             <ul>${o.order_items
               .map(
-                (i) => `<li class="${i.unavailable_at ? "is-out" : ""}"><span><b>${i.qty}×</b> ${esc(i.name)}${i.spice ? ` <em class="tag">${esc(i.spice)}</em>` : ""}${i.parcel ? ` <em class="tag">parcel</em>` : ""}${
+                (i) => `<li class="${i.unavailable_at ? "is-out" : ""}"><span><b>${i.qty}×</b> ${esc(i.name)}${daily.comboText(i.item_id) ? `<i class="lnote">with ${esc(daily.comboText(i.item_id))}</i>` : ""}${i.spice ? ` <em class="tag">${esc(i.spice)}</em>` : ""}${i.parcel ? ` <em class="tag">parcel</em>` : ""}${
                   i.note ? `<i class="lnote ${ALERT.test(i.note) ? "alert" : ""}">${esc(i.note)}</i>` : ""
                 }</span>${i.unavailable_at ? "<small>ran out</small>" : `<button type="button" class="cant" data-cant="${i.id}" data-name="${esc(i.qty + "× " + i.name)}">Can't make</button>`}</li>`
               )
@@ -360,6 +439,11 @@ function paintBoard() {
           .join("")
       : `<p class="calm calm--col">${col === "received" ? "No new orders." : col === "preparing" ? "Nothing cooking." : "Nothing waiting."}</p>`;
   }
+  $("[data-recall]").innerHTML = served.length
+    ? `<h2>Just served</h2><div class="recall">${served
+        .map((o) => `<span class="chip">${o.table_label === "TA" ? "TA" : "T" + esc(o.table_label)} #${esc(o.code)} · ${mins(o.served_at)}m <button type="button" class="link" data-move="${o.id}" data-to="ready" data-recall-btn>Recall</button></span>`)
+        .join("")}</div>`
+    : "";
   const late = orders.filter((o) => ["received", "preparing"].includes(o.status) && mins(o.created_at) >= 20).length;
   $("[data-board-sum]").textContent = late ? `${late} running late` : "Everything on time";
 }
@@ -374,18 +458,20 @@ function tickAges() {
 const panel = $("[data-panel]");
 let pGuests = 2;
 async function openPanel(id) {
-  const s = sessions.find((x) => x.id === id);
+  const s = sessions.find((x) => x.id === id) || takeaways.find((x) => x.id === id);
   if (!s) return panel.close();
+  if (openSession?.id !== s.id) $("[data-p-closebox]").hidden = true;
   openSession = s;
   const [o, p] = await Promise.all([
     sb.from("orders").select("id, code, status, total, created_at, customers(name, phone), order_items(id, name, qty, unit_price, spice, note, parcel, parcel_fee, unavailable_at)").eq("session_id", id).order("created_at"),
-    sb.from("payments").select("amount, method").eq("session_id", id),
+    sb.from("payments").select("id, amount, method, created_at, received_by, voided_at").eq("session_id", id).order("created_at"),
   ]);
   const list = o.data || [];
-  const paid = (p.data || []).reduce((a, x) => a + Number(x.amount), 0);
+  const pays = p.data || [];
+  const paid = pays.filter((x) => !x.voided_at).reduce((a, x) => a + Number(x.amount), 0);
   const due = Math.max(0, Number(s.total) - paid);
   const st = tableState(s);
-  $("[data-p-title]").textContent = `Table ${s.table_label}`;
+  $("[data-p-title]").textContent = s.kind === "takeaway" ? `Takeaway · ${s.customers?.name || "Guest"}` : `Table ${s.table_label}`;
   $("[data-p-sub]").textContent = { wait: "Confirm guests", eat: "Eating", bill: "Wants the bill", paid: "Paid" }[st];
   // everyone who ordered at this table (one person usually; a second phone joins with the PIN)
   const people = [];
@@ -402,14 +488,19 @@ async function openPanel(id) {
         <div><dt>Since</dt><dd>${clock(s.opened_at)}</dd></div>
       </dl>
     </div>`;
-  $("[data-p-seat]").hidden = st !== "wait";
+  $("[data-p-seat]").hidden = st !== "wait" || s.kind === "takeaway";
+  $("[data-p-loyal]").innerHTML = await daily.loyaltyHTML(s);
+  $("[data-p-add]").hidden = !(daily.canTake() && s.kind !== "takeaway" && s.status !== "closed");
+  const canRemake = ["cashier", "manager", "admin"].includes(me.role);
   pGuests = s.guests || 2;
   $("[data-p-guests]").textContent = String(pGuests);
   $("[data-p-orders]").innerHTML = list
     .map(
       (x) => `<div class="po ${x.status === "cancelled" ? "is-x" : ""}"><div class="po__head"><b>#${esc(x.code)}</b><span>${clock(x.created_at)}</span><em class="pill pill--${x.status}">${x.status === "held" ? "waiting" : x.status}</em>${people.length > 1 && x.customers ? `<span class="po__who">${esc(x.customers.name || fmtPhone(x.customers.phone))}</span>` : ""}
       ${["held", "received", "preparing"].includes(x.status) && ["cashier", "manager", "admin"].includes(me.role) ? `<button type="button" class="link" data-cancel="${x.id}">Cancel</button>` : ""}</div>
-      <ul>${x.order_items.map((i) => `<li class="${i.unavailable_at ? "is-out" : ""}"><span>${i.qty} × ${esc(i.name)}${i.spice ? ` · ${esc(i.spice)}` : ""}${i.parcel ? " · parcel" : ""}${i.note ? ` · <i>${esc(i.note)}</i>` : ""}</span><span>${rupee(i.unavailable_at ? 0 : i.qty * i.unit_price + Number(i.parcel_fee))}</span></li>`).join("")}</ul></div>`
+      <ul>${x.order_items.map((i) => `<li class="${i.unavailable_at ? "is-out" : ""}"><span>${i.qty} × ${esc(i.name)}${i.spice ? ` · ${esc(i.spice)}` : ""}${i.parcel ? " · parcel" : ""}${i.note ? ` · <i>${esc(i.note)}</i>` : ""}</span><span>${rupee(i.unavailable_at ? 0 : i.qty * i.unit_price + Number(i.parcel_fee))}</span>${
+        canRemake && !i.unavailable_at && Number(i.unit_price) > 0 && ["ready", "served"].includes(x.status) ? `<button type="button" class="link" data-remake="${i.id}" data-name="${esc(i.qty + "× " + i.name)}">Remake</button>` : ""
+      }</li>`).join("")}</ul></div>`
     )
     .join("");
   const rate = branches.find((b) => b.id === branch)?.tax_percent ?? 5;
@@ -420,12 +511,23 @@ async function openPanel(id) {
   $("[data-p-tax]").textContent = rupee(s.tax);
   $("[data-p-total]").textContent = rupee(s.total);
   $("[data-p-paidrow]").hidden = !paid;
+  const canVoid = ["manager", "admin"].includes(me.role);
+  $("[data-p-pays]").innerHTML = pays.length
+    ? `<ul class="bl">${pays
+        .map(
+          (x) => `<li class="${x.voided_at ? "is-void" : ""}"><span>${{ cash: "Cash", upi: "UPI", card: "Card" }[x.method]} · ${clock(x.created_at)}${x.voided_at ? " · voided" : ""}</span><b>${rupee(x.amount)}</b>${
+            canVoid && !x.voided_at ? `<button type="button" class="link" data-void-pay="${x.id}">Void</button>` : ""
+          }</li>`
+        )
+        .join("")}</ul>`
+    : "";
   $("[data-p-paid]").textContent = rupee(paid);
   $("[data-p-pay]").hidden = due <= 0;
   $("[data-p-due]").textContent = rupee(due);
   $("[data-p-discbox]").hidden = !["manager", "admin"].includes(me.role) || s.status === "paid";
   $("[data-p-close-table]").hidden = !(s.status === "paid" || Number(s.total) === 0 || ["manager", "admin"].includes(me.role));
   $("[data-p-close-table]").textContent = s.status === "paid" || Number(s.total) === 0 ? "Close table" : "Close unpaid (manager)";
+  openSession.due = due;
   openSession.list = list;
   if (!panel.open) panel.showModal();
 }
@@ -449,14 +551,47 @@ $("[data-p-discgo]").addEventListener("click", async (e) => {
   }
 });
 $("[data-p-close-table]").addEventListener("click", async (e) => {
-  const unpaid = openSession.status !== "paid" && Number(openSession.total) > 0;
-  if (unpaid && !confirm(`Close table ${openSession.table_label} without full payment?`)) return;
-  if (await act(e.currentTarget, () => sb.rpc("close_session", { p_session: openSession.id }), `Table ${openSession.table_label} is free`)) {
+  const s = openSession;
+  const unpaid = s.due > 0 && Number(s.total) > 0;
+  if (!unpaid) {
+    if (await act(e.currentTarget, () => sb.rpc("close_session", { p_session: s.id }), `Table ${s.table_label} is free`)) (panel.close(), reload());
+    return;
+  }
+  // money still due: say why (walk-out or void) and what happened; it goes in the activity log
+  $("[data-p-closebox]").hidden = false;
+  $("[data-p-closebox] textarea").focus();
+});
+$("[data-p-closego]").addEventListener("click", async (e) => {
+  const s = openSession;
+  const reason = $("[data-p-closebox] input[name=why]:checked")?.value;
+  const note = $("[data-p-closebox] textarea").value.trim();
+  if (!reason) return toast("Choose walk-out or void.", "err");
+  if (note.length < 3) return toast("Add a short note saying what happened.", "err");
+  if (!confirm(`Close table ${s.table_label} with ${rupee(s.due)} unpaid, as ${reason === "walkout" ? "a walk-out" : "void"}?`)) return;
+  if (await act(e.currentTarget, () => sb.rpc("close_session", { p_session: s.id, p_reason: reason, p_note: note }), `Table ${s.table_label} closed`)) {
+    $("[data-p-closebox]").hidden = true;
+    $("[data-p-closebox] textarea").value = "";
     panel.close();
     reload();
   }
 });
+$("[data-p-pays]").addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-void-pay]");
+  if (!b) return;
+  const reason = prompt("Why void this payment? (e.g. entered UPI, guest paid cash)\n\nRecord the right one afterwards.");
+  if (reason === null) return;
+  if (await act(b, () => sb.rpc("void_payment", { p_payment: b.dataset.voidPay, p_reason: reason }), "Payment voided")) reload();
+});
+$("[data-p-add]").addEventListener("click", () => daily.takeOrder(openSession.table_label, openSession));
 $("[data-p-orders]").addEventListener("click", async (e) => {
+  const rm = e.target.closest("[data-remake]");
+  if (rm) {
+    const why = prompt(`Remake ${rm.dataset.name} at no charge?\n\nWhy? (e.g. wrong dish, cold, spilled)`);
+    if (why === null) return;
+    if (why.trim().length < 3) return toast("Add a short reason.", "err");
+    if (await act(rm, () => sb.rpc("remake_item", { p_item: Number(rm.dataset.remake), p_reason: why.trim() }), "Remake sent to the kitchen")) reload();
+    return;
+  }
   const b = e.target.closest("[data-cancel]");
   if (!b || !confirm("Cancel this order? It comes off the bill.")) return;
   if (await act(b, () => sb.rpc("set_order_status", { p_order: b.dataset.cancel, p_status: "cancelled" }), "Order cancelled")) reload();
@@ -475,6 +610,8 @@ $("[data-p-print]").addEventListener("click", () => {
 document.addEventListener("click", async (e) => {
   const open = e.target.closest("[data-open]");
   if (open) return openPanel(open.dataset.open);
+  const take = e.target.closest("[data-take]");
+  if (take) return daily.takeOrder(take.dataset.take, null);
   const mv = e.target.closest("[data-move]");
   if (mv) {
     if (await act(mv, () => sb.rpc("set_order_status", { p_order: mv.dataset.move, p_status: mv.dataset.to }))) {
@@ -606,12 +743,15 @@ const TAGS = { signature: "Signature", bestseller: "Bestseller", special: "Speci
 const DIETS = { veg: "Veg", egg: "Egg", nonveg: "Non-veg" };
 async function loadMenu() {
   const [{ data, error }, cats] = await Promise.all([
-    sb.from("menu_items").select("id, name, category, price, available, updated_at, tamil, description, diet, tags, sort, deleted_at").order("sort").order("name"),
+    sb.from("menu_items").select("id, name, category, price, available, updated_at, tamil, description, diet, tags, sort, deleted_at, photo, serve_from, serve_to, serve_days, pairs, combo").order("sort").order("name"),
     sb.from("menu_categories").select("id, name, sort").order("sort"),
   ]);
+  const { data: here } = await sb.from("branch_menu").select("item_id, available, price").eq("branch_id", branch);
+  const hereMap = Object.fromEntries((here || []).map((x) => [x.item_id, x]));
   if (error) return toast("Couldn't load the menu.", "err");
   if (cats.data) categories = cats.data;
-  menu = data || [];
+  menu = (data || []).map((m) => ({ ...m, offHere: hereMap[m.id]?.available === false, priceHere: hereMap[m.id]?.price ?? null }));
+  $("[data-offers]").hidden = $("[data-cathours]").hidden = !canPrice();
   $("[data-add-dish]").hidden = !canPrice();
   $("[data-menu-view] [value=removed]").hidden = !canPrice();
   paintMenu();
@@ -626,7 +766,7 @@ function paintMenu() {
   const removed = menu.filter((m) => m.deleted_at);
   const pool = view === "removed" ? removed : view === "off" ? live.filter((m) => !m.available) : live;
   const list = pool.filter((m) => !q || m.name.toLowerCase().includes(q) || (m.tamil || "").includes(q));
-  const off = live.filter((m) => !m.available).length;
+  const off = live.filter((m) => !m.available || (!canPrice() && m.offHere)).length;
   const rank = (c) => (categories.findIndex((x) => x.id === c) + 1 || 999);
   const cats = [...new Set(list.map((m) => m.category))].sort((a, b) => rank(a) - rank(b));
   const head =
@@ -636,7 +776,11 @@ function paintMenu() {
   const row = (m) =>
     `<div class="mrow ${m.available ? "" : "is-off"}">
           <span class="mrow__name">${
-            canPrice() ? `<button type="button" class="mname" data-edit="${esc(baseOf(m.id))}"><b>${esc(m.name)}</b></button>` : `<b>${esc(m.name)}</b>`
+            (m.photo ? `<img class="mthumb" src="${photoUrl(m.photo, 400)}" alt="" width="40" height="40" loading="lazy">` : "") + (canPrice() ? `<button type="button" class="mname" data-edit="${esc(baseOf(m.id))}"><b>${esc(m.name)}</b></button>` : `<b>${esc(m.name)}</b>`) +
+            (m.offHere && canPrice() ? `<i class="mtag mtag--spicy">Off at ${esc(branches.find((b) => b.id === branch)?.name || "this branch")}</i>` : "") +
+            (m.priceHere != null ? `<i class="mtag">₹${Number(m.priceHere)} here</i>` : "") +
+            (m.serve_from ? `<i class="mtag mtag--time">${m.serve_from.slice(0, 5)}–${m.serve_to.slice(0, 5)}</i>` : "") +
+            (m.serve_days ? `<i class="mtag mtag--time">${m.serve_days.map((d) => "SMTWTFS"[d]).join("")}</i>` : "")
           }${(m.tags || []).map((t) => `<i class="mtag mtag--${esc(t)}">${esc(TAGS[t] || t)}</i>`).join("")}${
             canPrice() ? `<button type="button" class="link link--soft" data-history="${esc(m.id)}">History</button>` : ""
           }</span>
@@ -645,7 +789,7 @@ function paintMenu() {
               ? `<label class="price"><span>₹</span><input type="number" inputmode="numeric" min="0" max="100000" step="1" value="${Number(m.price)}" data-price="${esc(m.id)}" aria-label="Price of ${esc(m.name)} in rupees"></label>`
               : `<b class="price price--ro">${rupee(m.price)}</b>`
           }
-          <label class="switch" title="On the menu"><input type="checkbox" data-avail="${esc(m.id)}" ${m.available ? "checked" : ""} aria-label="${esc(m.name)} on the menu"><i></i></label>
+          <label class="switch" title="On the menu"><input type="checkbox" data-avail="${esc(m.id)}" ${m.available && (canPrice() || !m.offHere) ? "checked" : ""} aria-label="${esc(m.name)} on the menu"><i></i></label>
         </div>
         <div class="mhist" data-hist="${esc(m.id)}" hidden></div>`;
   // one Restore button per removed dish (on its first row)
@@ -694,6 +838,7 @@ function openDish(base) {
     : "It shows on the website and every table as soon as you save.";
   $("[data-d-prices]").hidden = !!base;
   $("[data-d-remove]").hidden = !base;
+  $("[data-d-more]").hidden = !base;
   fillCats(m?.category || $("[data-menu-search]").dataset.lastCat || categories[0]?.id);
   if (m) {
     dishForm.elements.name.value = plainName(m);
@@ -707,6 +852,13 @@ function openDish(base) {
   dishForm.elements.name.focus();
 }
 $("[data-add-dish]").addEventListener("click", () => openDish(null));
+$("[data-d-more]").addEventListener("click", () => {
+  const base = editing;
+  dishDlg.close();
+  menuPlus.openExtras(base, menu, categories);
+});
+$("[data-offers]").addEventListener("click", () => menuPlus.openOffers(menu, categories));
+$("[data-cathours]").addEventListener("click", () => menuPlus.openHours());
 $("[data-d-close]").addEventListener("click", () => dishDlg.close());
 $("[data-d-cat]").addEventListener("change", (e) => {
   const isNew = e.target.value === "__new";
@@ -786,7 +938,7 @@ $("[data-menu]").addEventListener("change", async (e) => {
   if (c) {
     const m = menu.find((x) => x.id === c.dataset.avail);
     const ok = await act(null, () => sb.rpc("set_item_available", { p_item: m.id, p_available: c.checked }), c.checked ? `${m.name} is back on` : `${m.name} marked sold out`);
-    if (ok) m.available = c.checked;
+    if (ok) canPrice() ? (m.available = c.checked) : (m.offHere = !c.checked);
     else c.checked = !c.checked;
     return paintMenu();
   }
@@ -879,7 +1031,7 @@ let numbersData = null;
 async function loadNumbers() {
   const since = dayStart(days);
   const [pay, ses, items] = await Promise.all([
-    sb.from("payments").select("amount, method, created_at").eq("branch_id", branch).gte("created_at", since).limit(20000),
+    sb.from("payments").select("amount, method, created_at").eq("branch_id", branch).gte("created_at", since).is("voided_at", null).limit(20000),
     sb.from("table_sessions").select("table_label, total, guests, guests_max, status, opened_at").eq("branch_id", branch).gte("opened_at", since).limit(20000),
     sb.from("order_items").select("name, qty, unit_price, unavailable_at, orders!inner(branch_id, created_at, status)").eq("orders.branch_id", branch).gte("orders.created_at", since).neq("orders.status", "cancelled").limit(50000),
   ]);
@@ -1036,7 +1188,8 @@ document.addEventListener("click", (e) => {
   if (!b) return;
   const k = b.dataset.pdf;
   const name = k === "guests" && gView === "all" ? "customers" : k;
-  downloadPdf(b, REPORTS[k](), `pandias-${branch}-${name}-${ymd()}.pdf`);
+  const rep = (REPORTS[k] || more.reports[k] || daily.reports[k] || business.reports[k])?.();
+  downloadPdf(b, rep, `pandias-${branch}-${rep?.file || name + "-" + ymd()}.pdf`);
 });
 // one table's bill
 $("[data-p-pdf]").addEventListener("click", (e) => {
@@ -1072,4 +1225,42 @@ $("[data-sound]").addEventListener("click", async (e) => {
   e.currentTarget.classList.add("is-on");
 });
 
-boot();
+// ---------------------------------------------------------------- the running-the-business screens (src/staff-more.js)
+const more = initMore({
+  sb, $, $$, esc, rupee, toast, act, friendly, clock, fmtPhone, telLink, publishableKey: PUBLISHABLE,
+  get me() { return me; },
+  get branch() { return branch; },
+  get branches() { return branches; },
+  reloadBranches: () => reloadBranches(),
+  reload: () => reload(),
+  downloadPdf: (btn, report, file) => downloadPdf(btn, report, file),
+});
+Object.assign(SCREENS, more.roles);
+const daily = initDaily({
+  sb, $, $$, esc, rupee, toast, act, friendly, clock, fmtPhone, telLink,
+  get me() { return me; },
+  get branch() { return branch; },
+  get branches() { return branches; },
+  reload: () => reload(),
+  setBadge: (k, n) => badge(k, n),
+});
+Object.assign(SCREENS, daily.roles);
+const business = initBusiness({
+  sb, $, $$, esc, rupee, toast, act, friendly, clock, ROLE,
+  get me() { return me; },
+  get branch() { return branch; },
+  setBadge: (k, n) => badge(k, n),
+});
+Object.assign(SCREENS, business.roles);
+const lowStockEvery = every(5 * 60e3, () => business.lowStock());
+const lowRatingsEvery = every(2 * 60e3, () => daily.lowRatingsToday());
+const menuPlus = initMenuPlus({ sb, $, $$, esc, rupee, toast, act, friendly, reloadMenu: () => loadMenu() });
+
+const ios = initIOS({ $, $$ });
+
+boot().then(async () => {
+  if (!me) return;
+  business.paintClock();
+  const html = await more.todayBanner();
+  if (html) $("[data-screen=today] .bar").insertAdjacentHTML("afterend", html);
+});

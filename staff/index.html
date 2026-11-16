@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Pandia's · Staff</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#3a0a10">
+  <meta name="theme-color" content="#f6f2ec">
   <link rel="icon" href="../favicon.png" type="image/png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pandia's">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="preload" href="../fonts/anek-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="staff.css">
 </head>
@@ -17,7 +23,7 @@
       <img src="../img/logo-emblem.webp" alt="" width="120" height="82">
       <h1>Good to see you</h1>
       <p class="soft">Sign in to your Pandia's kitchen.</p>
-      <label>Email <input name="email" type="email" autocomplete="username" required></label>
+      <label>Sign-in name or email <input name="email" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
       <label>Password <input name="password" type="password" autocomplete="current-password" required minlength="6"></label>
       <p class="err" data-login-err role="alert" hidden></p>
       <button class="btn btn--dark" type="submit">Sign in</button>
@@ -59,6 +65,7 @@
         <div class="attention" data-attention></div>
         <h2 class="h2">On the floor</h2>
         <div class="floor floor--mini" data-floor-mini></div>
+        <div data-ta-today></div>
       </section>
 
       <!-- ORDERS (kitchen board) -->
@@ -69,6 +76,7 @@
           <div class="col"><h2>Cooking <b data-n="preparing">0</b></h2><div class="col__list" data-col="preparing"></div></div>
           <div class="col"><h2>Ready to serve <b data-n="ready">0</b></h2><div class="col__list" data-col="ready"></div></div>
         </div>
+        <div class="recallbox" data-recall></div>
       </section>
 
       <!-- TABLES (floor + bill) -->
@@ -76,6 +84,7 @@
         <header class="bar"><div><h1>Tables</h1><p class="soft" data-floor-sum></p></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="tables">Download PDF</button></header>
         <div class="legend"><span class="dot dot--free"></span>Free <span class="dot dot--wait"></span>Confirm guests <span class="dot dot--eat"></span>Eating <span class="dot dot--bill"></span>Wants bill <span class="dot dot--paid"></span>Paid</div>
         <div class="floor" data-floor></div>
+        <div data-ta-tables></div>
       </section>
 
       <!-- GUESTS (names, numbers, PINs) -->
@@ -90,7 +99,7 @@
       <!-- MENU (products) -->
       <section class="screen" data-screen="menu" hidden>
         <header class="bar"><div><h1>Menu</h1><p class="soft">Switch a dish off when it runs out. It shows “Sold out” on every table at once.</p></div><button type="button" class="btn btn--line btn--sm btn--pdf" data-pdf="menu">Download PDF</button></header>
-        <div class="menutools"><input type="search" placeholder="Find a dish…" data-menu-search aria-label="Find a dish"><select data-menu-view aria-label="Show"><option value="all">All dishes</option><option value="off">Switched off</option><option value="removed">Recently removed</option></select><button type="button" class="btn btn--gold" data-add-dish hidden>+ Add dish</button></div>
+        <div class="menutools"><input type="search" placeholder="Find a dish…" data-menu-search aria-label="Find a dish"><select data-menu-view aria-label="Show"><option value="all">All dishes</option><option value="off">Switched off</option><option value="removed">Recently removed</option></select><button type="button" class="btn btn--line" data-offers hidden>Offers</button><button type="button" class="btn btn--line" data-cathours hidden>Category hours</button><button type="button" class="btn btn--gold" data-add-dish hidden>+ Add dish</button></div>
         <div class="menulist" data-menu></div>
       </section>
 
@@ -119,6 +128,8 @@
           <button type="button" class="btn btn--gold" data-p-seatgo>Seated ✓ Send to kitchen</button>
         </div>
         <div class="guestline" data-p-guest></div>
+        <div data-p-loyal></div>
+        <button type="button" class="btn btn--gold" data-p-add hidden>+ Add an order for this table</button>
         <div class="porders" data-p-orders></div>
         <dl class="sum">
           <div><dt>Subtotal</dt><dd data-p-subtotal></dd></div>
@@ -128,9 +139,16 @@
           <div data-p-paidrow hidden><dt>Paid</dt><dd data-p-paid></dd></div>
         </dl>
         <div class="disc" data-p-discbox hidden><input type="number" min="0" step="1" inputmode="numeric" placeholder="Discount ₹" data-p-discin aria-label="Discount in rupees"><button type="button" class="btn btn--line" data-p-discgo>Apply</button></div>
+        <div data-p-pays></div>
         <div class="pay" data-p-pay>
           <p>Collect <b data-p-due></b></p>
           <div class="pay__ways"><button type="button" class="btn btn--dark" data-pay="cash">Cash</button><button type="button" class="btn btn--dark" data-pay="upi">UPI</button><button type="button" class="btn btn--dark" data-pay="card">Card</button></div>
+        </div>
+        <div class="closebox" data-p-closebox hidden>
+          <p><b>Money is still due on this table.</b> Why are you closing it?</p>
+          <div class="dform__chips"><label><input type="radio" name="why" value="walkout"><span>Walk-out (left without paying)</span></label><label><input type="radio" name="why" value="void"><span>Void (mistake / no charge)</span></label></div>
+          <textarea rows="2" maxlength="300" placeholder="What happened? e.g. family of 4 left at 9:40, ₹840 unpaid"></textarea>
+          <button type="button" class="btn btn--dark" data-p-closego>Close with this reason</button>
         </div>
         <div class="panel__foot"><button type="button" class="btn btn--line" data-p-print>Print bill</button><button type="button" class="btn btn--line" data-p-pdf>Bill PDF</button><button type="button" class="btn btn--line" data-p-close-table>Close table</button></div>
       </div>
@@ -163,7 +181,7 @@
             <label><input type="checkbox" name="tag_spicy"><span>Spicy</span></label>
           </fieldset>
           <p class="err" data-d-err hidden></p>
-          <div class="panel__foot"><button type="button" class="btn btn--line" data-d-remove hidden>Remove dish</button><button type="submit" class="btn btn--dark" data-d-save>Save</button></div>
+          <div class="panel__foot"><button type="button" class="btn btn--line" data-d-remove hidden>Remove dish</button><button type="button" class="btn btn--line" data-d-more hidden>More settings (photo, hours, branches)</button><button type="submit" class="btn btn--dark" data-d-save>Save</button></div>
         </div>
       </form>
     </dialog>

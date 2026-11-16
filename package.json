@@ -3,6 +3,7 @@
   "private": true,
   "description": "Hotel Pandia's website, QR table ordering and staff app (plain HTML/CSS/JS). Only the staff app and the 3D worker need a build.",
   "scripts": {
+    "prebuild:staff": "node -e \"require('fs').rmSync('staff/chunks',{recursive:true,force:true})\"",
     "build:staff": "esbuild app=src/staff-app.js --bundle --splitting --format=esm --minify --target=es2022 --outdir=staff --chunk-names=chunks/[name]-[hash]",
     "build:mascot": "esbuild src/mascot-worker.js --bundle --format=iife --minify --target=es2022 --outfile=js/mascot-worker.js",
     "build:pages": "python tools/build-menu.py && python tools/build-order.py",
@@ -13,6 +14,7 @@
     "esbuild": "0.28.2",
     "jspdf": "3.0.1",
     "jspdf-autotable": "5.0.2",
+    "qrcode-generator": "^1.4.4",
     "three": "0.186.1"
   }
 }

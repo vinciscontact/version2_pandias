@@ -148,3 +148,16 @@
   .bill { position: static; }
   .page-order .mtools { top: 62px; }
 }
+
+/* takeaway pre-order */
+.pickup { min-height: 50px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--cream-50); font: inherit; font-weight: 600; }
+.held a { color: inherit; font-weight: 700; }
+
+/* photos, offers, "goes well with" */
+.odish__img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; margin-bottom: 10px; background: var(--cream-50); }
+.odish__offer { margin-left: auto; padding: 2px 9px; border-radius: 999px; background: #c8141f; color: #fff; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap; }
+.step__price s { color: var(--muted, #8a6a5c); font-weight: 500; margin-right: 2px; }
+.pairbar { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom)); translate: -50% 0; z-index: 60; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: min(100% - 24px, 520px); padding: 10px 12px; border-radius: 18px; background: #3a0a10; color: #fff7ea; box-shadow: 0 18px 40px -16px rgb(0 0 0 / 0.5); font-size: 0.9rem; }
+.pairbar > span { font-weight: 700; }
+.pairbar button { border: 0; border-radius: 999px; padding: 8px 12px; background: #fff7ea; color: #3a0a10; font: inherit; font-weight: 700; cursor: pointer; }
+.pairbar .pairbar__x { margin-left: auto; background: none; color: #fff7ea; font-size: 1.3rem; padding: 2px 8px; }
